@@ -1,0 +1,119 @@
+# 📁 Project Structure
+
+```bash
+
+├── docker
+│   └── Dockerfile
+├── docker-compose.yml
+├── logs
+│   ├── combined.log
+│   └── error.log
+├── migrations
+│   └── sql
+│       ├── 0002_init.sql
+│       └── 001_init.sql
+├── nginix
+├── package-lock.json
+├── package.json
+├── public
+├── README.md
+├── scripts
+├── src
+│   ├── apis
+│   │   ├── controllers
+│   │   │   ├── apiKey.controller.ts
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── health.controller.ts
+│   │   │   ├── notification.controller.ts
+│   │   │   ├── organization.controller.ts
+│   │   │   ├── subscription.controller.ts
+│   │   │   ├── url.controller.ts
+│   │   │   ├── usage.controller.ts
+│   │   │   └── user.controller.ts
+│   │   └── routes
+│   │       ├── apiKey.routes.ts
+│   │       ├── auth.routes.ts
+│   │       ├── health.routes.ts
+│   │       ├── index.ts
+│   │       └── url.routes.ts
+│   ├── app.ts
+│   ├── config
+│   │   ├── cache
+│   │   │   └── redis.ts
+│   │   ├── config.ts
+│   │   ├── database
+│   │   │   ├── mongodb.ts
+│   │   │   └── postgresql.ts
+│   │   ├── index.ts
+│   │   ├── log
+│   │   │   └── logger.ts
+│   │   └── queue
+│   │       └── kafka.ts
+│   ├── constants
+│   │   ├── env.ts
+│   │   ├── errors.ts
+│   │   ├── http-status.ts
+│   │   ├── index.ts
+│   │   ├── messages.ts
+│   │   ├── permissions.ts
+│   │   ├── rbac.ts
+│   │   └── roles.ts
+│   ├── middleware
+│   │   ├── apiKey.middleware.ts
+│   │   ├── apiRateLimiter.middleware.ts
+│   │   ├── authentication.middleware.ts
+│   │   ├── authorization.middleware.ts
+│   │   ├── csrf.middleware.ts
+│   │   ├── error.middleware.ts
+│   │   ├── globalErrorHandler.ts
+│   │   ├── globalRateLimiter.middleware.ts
+│   │   ├── rbac.middleware.ts
+│   │   ├── requestId.middleware.ts
+│   │   └── requestLogger.middleware.ts
+│   ├── models
+│   │   ├── apiKey.model.ts
+│   │   ├── domain.model.ts
+│   │   ├── organization.model.ts
+│   │   ├── subscription.model.ts
+│   │   ├── url.model.ts
+│   │   └── user.model.ts
+│   ├── repository
+│   │   ├── api.key.repository.ts
+│   │   ├── organization.repository.ts
+│   │   ├── refreshToken.repository.ts
+│   │   ├── session.repository.ts
+│   │   ├── subscription.repository.ts
+│   │   ├── subscriptionPlan.repository.ts
+│   │   ├── url.repository.ts
+│   │   ├── usage.repository.ts
+│   │   └── user.repository.ts
+│   ├── scripts
+│   │   ├── db.init.ts
+│   │   └── migrate.ts
+│   ├── server.ts
+│   ├── services
+│   │   ├── apiKey.service.ts
+│   │   ├── auth
+│   │   │   ├── auth.service.ts
+│   │   │   └── jwt.service.ts
+│   │   ├── kafka.producer.service.ts
+│   │   ├── notification.service.ts
+│   │   ├── subscription.service.ts
+│   │   └── url.service.ts
+│   ├── types
+│   │   ├── express.d.ts
+│   │   └── types.ts
+│   └── utils
+│       ├── AppError.ts
+│       ├── hash.ts
+│       ├── httpError.ts
+│       ├── httpRequest.ts
+│       ├── httpResponse.ts
+│       ├── jwt.ts
+│       ├── throwError.ts
+│       └── token.utils.ts
+├── test
+└── tsconfig.json
+
+27 directories, 86 files
+```
