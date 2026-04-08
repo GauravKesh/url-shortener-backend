@@ -7,7 +7,7 @@ declare module "express-serve-static-core" {
       userId: number;
       organizationId?: number;
       role:string;
-      tenantId:string;
+      tenantId:number;
     };
   }
 }

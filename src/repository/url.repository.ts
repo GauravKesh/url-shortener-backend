@@ -1,52 +1,19 @@
 import pool from "../config/database/postgresql.ts";
 
-// ─── Whitelisted fields for safe dynamic updates ───────────────────────────
-const ALLOWED_UPDATE_FIELDS: ReadonlySet<string> = new Set([
-  "original_url",
-  "short_code",
-  "domain_id",
-  "expires_at",
-]);
+import type {
+  UrlRow,
+  CreateUrlData,
+  GetUrlsOptions,
+} from "../types/url.ts";
 
-// ─── Types ─────────────────────────────────────────────────────────────────
+import {
+  ALLOWED_UPDATE_SET,
+  type AllowedUpdateField,
+} from "../constants/url.ts";
 
-export interface UrlRow {
-  id: number;
-  short_code: string;
-  original_url: string;
-  user_id: number;
-  organization_id: number;
-  domain_id: number | null;
-  expires_at: Date | null;
-  clicks: number;
-  deleted_at: Date | null;
-  created_at: Date;
-  updated_at: Date;
-}
-
-export interface CreateUrlData {
-  shortCode: string;
-  originalUrl: string;
-  userId: number;
-  organizationId: number;
-  domainId?: number | null;
-  expiresAt?: Date | null;
-}
-
-export interface GetUrlsOptions {
-  userId?: number;
-  organizationId?: number;
-  /**
-   * AND  → user_id AND organization_id must both match (safe, scoped)
-   * OR   → either matches (use carefully — cross-org leakage risk if not gated upstream)
-   */
-  mode?: "OR" | "AND";
-  limit?: number;
-  offset?: number;
-}
-
-// ─── Create ────────────────────────────────────────────────────────────────
-
+/*
+  Create a new short URL entry
+*/
 export const createUrl = async (data: CreateUrlData): Promise<UrlRow> => {
   const {
     shortCode,
@@ -68,9 +35,9 @@ export const createUrl = async (data: CreateUrlData): Promise<UrlRow> => {
   return rows[0];
 };
 
-// ─── Read ──────────────────────────────────────────────────────────────────
-
-/** Primary redirect look-up by short code. */
+/*
+  Fetch URL by shortCode (used for redirect)
+*/
 export const findUrl = async (shortCode: string): Promise<UrlRow | null> => {
   const { rows } = await pool.query<UrlRow>(
     `SELECT * FROM urls
@@ -82,6 +49,9 @@ export const findUrl = async (shortCode: string): Promise<UrlRow | null> => {
   return rows[0] ?? null;
 };
 
+/*
+  Fetch URL by ID (global lookup)
+*/
 export const findUrlById = async (id: number): Promise<UrlRow | null> => {
   const { rows } = await pool.query<UrlRow>(
     `SELECT * FROM urls
@@ -92,7 +62,9 @@ export const findUrlById = async (id: number): Promise<UrlRow | null> => {
   return rows[0] ?? null;
 };
 
-/** Multi-tenant-safe fetch — scoped to org. */
+/*
+  Fetch URL scoped to organization (multi-tenant safety)
+*/
 export const findUrlByIdAndOrg = async (
   id: number,
   organizationId: number
@@ -107,6 +79,9 @@ export const findUrlByIdAndOrg = async (
   return rows[0] ?? null;
 };
 
+/*
+  Fetch URL scoped to user
+*/
 export const findUrlByIdAndUser = async (
   id: number,
   userId: number
@@ -121,7 +96,9 @@ export const findUrlByIdAndUser = async (
   return rows[0] ?? null;
 };
 
-/** Domain + short-code composite look-up (custom domains). */
+/*
+  Fetch URL by domain + shortCode (custom domain support)
+*/
 export const findByDomainAndCode = async (
   domainId: number,
   shortCode: string
@@ -136,12 +113,9 @@ export const findByDomainAndCode = async (
   return rows[0] ?? null;
 };
 
-// ─── Short-code uniqueness ─────────────────────────────────────────────────
-
-/**
- * Checks whether the short code is already in use — including soft-deleted
- * rows, so a recycled code can never silently conflict.
- */
+/*
+  Check if shortCode already exists
+*/
 export const isShortCodeTaken = async (shortCode: string): Promise<boolean> => {
   const { rows } = await pool.query(
     `SELECT 1 FROM urls WHERE short_code = $1 LIMIT 1`,
@@ -150,8 +124,9 @@ export const isShortCodeTaken = async (shortCode: string): Promise<boolean> => {
   return rows.length > 0;
 };
 
-// ─── List / Paginate ───────────────────────────────────────────────────────
-
+/*
+  Get paginated URLs for organization
+*/
 export const getUrlsByOrg = async ({
   organizationId,
   limit = 10,
@@ -172,6 +147,9 @@ export const getUrlsByOrg = async ({
   return rows;
 };
 
+/*
+  Count URLs for organization (pagination support)
+*/
 export const countUrlsByOrg = async (organizationId: number): Promise<number> => {
   const { rows } = await pool.query<{ count: string }>(
     `SELECT COUNT(*) FROM urls
@@ -182,6 +160,9 @@ export const countUrlsByOrg = async (organizationId: number): Promise<number> =>
   return Number(rows[0].count);
 };
 
+/*
+  Get paginated URLs for user
+*/
 export const getUrlsByUser = async ({
   userId,
   limit = 10,
@@ -202,6 +183,9 @@ export const getUrlsByUser = async ({
   return rows;
 };
 
+/*
+  Count URLs for user
+*/
 export const countUrlsByUser = async (userId: number): Promise<number> => {
   const { rows } = await pool.query<{ count: string }>(
     `SELECT COUNT(*) FROM urls
@@ -212,13 +196,9 @@ export const countUrlsByUser = async (userId: number): Promise<number> => {
   return Number(rows[0].count);
 };
 
-/**
- * Flexible list query.
- *
- * ⚠️  Use mode "OR" only when you have already verified that the calling user
- *     belongs to the supplied organizationId, otherwise org-level rows are
- *     accessible to any authenticated user who guesses an org id.
- */
+/*
+  Flexible fetch (user + org with AND/OR mode)
+*/
 export const getUrls = async ({
   userId,
   organizationId,
@@ -231,8 +211,8 @@ export const getUrls = async ({
 
   if (userId !== undefined && organizationId !== undefined) {
     values.push(userId, organizationId);
-    const uIdx = values.length - 1; // $1
-    const oIdx = values.length;     // $2
+    const uIdx = values.length - 1;
+    const oIdx = values.length;
     const op = mode === "AND" ? "AND" : "OR";
     conditions.push(`(user_id = $${uIdx} ${op} organization_id = $${oIdx})`);
   } else if (userId !== undefined) {
@@ -257,19 +237,18 @@ export const getUrls = async ({
   return rows;
 };
 
-// ─── Update ────────────────────────────────────────────────────────────────
-
-/**
- * Safe dynamic update — only whitelisted columns are accepted.
- * Keys not in ALLOWED_UPDATE_FIELDS are silently dropped.
- */
+/*
+  Update URL (only whitelisted fields allowed)
+*/
 export const updateUrl = async (
   id: number,
-  updates: Partial<Record<typeof ALLOWED_UPDATE_FIELDS extends Set<infer K> ? K : never, unknown>>
+  updates: Record<string, unknown>
 ): Promise<UrlRow | null> => {
   const safeUpdates = Object.fromEntries(
-    Object.entries(updates).filter(([key]) => ALLOWED_UPDATE_FIELDS.has(key))
-  );
+    Object.entries(updates).filter(([key]) =>
+      ALLOWED_UPDATE_SET.has(key as AllowedUpdateField)
+    )
+  ) as Partial<Record<AllowedUpdateField, unknown>>;
 
   const keys = Object.keys(safeUpdates);
   if (keys.length === 0) return null;
@@ -289,9 +268,9 @@ export const updateUrl = async (
   return rows[0] ?? null;
 };
 
-// ─── Delete ────────────────────────────────────────────────────────────────
-
-/** Soft delete — org-scoped to prevent cross-tenant deletion. */
+/*
+  Soft delete URL (organization scoped)
+*/
 export const deleteUrl = async (
   id: number,
   organizationId: number
@@ -307,10 +286,9 @@ export const deleteUrl = async (
   return (rowCount ?? 0) > 0;
 };
 
-/**
- * Hard delete — admin/debug only.
- * Caller must enforce authorization before invoking this.
- */
+/*
+  Hard delete URL (permanent removal)
+*/
 export const hardDeleteUrl = async (
   id: number,
   organizationId: number
@@ -324,9 +302,9 @@ export const hardDeleteUrl = async (
   return (rowCount ?? 0) > 0;
 };
 
-// ─── Clicks ────────────────────────────────────────────────────────────────
-
-/** Fire-and-forget click increment (redirects, best-effort). */
+/*
+  Increment click count
+*/
 export const incrementClicks = async (id: number): Promise<void> => {
   await pool.query(
     `UPDATE urls SET clicks = clicks + 1 WHERE id = $1`,
@@ -334,7 +312,9 @@ export const incrementClicks = async (id: number): Promise<void> => {
   );
 };
 
-/** Atomic increment — returns the new click count. */
+/*
+  Increment clicks and return updated count
+*/
 export const incrementClicksAndGet = async (
   id: number
 ): Promise<number | null> => {
@@ -348,9 +328,9 @@ export const incrementClicksAndGet = async (
   return rows[0]?.clicks ?? null;
 };
 
-// ─── Expiration ────────────────────────────────────────────────────────────
-
-/** Returns true if the URL exists and its expiry has passed. */
+/*
+  Check if URL is expired
+*/
 export const isUrlExpired = async (shortCode: string): Promise<boolean> => {
   const { rows } = await pool.query<{ expires_at: Date | null }>(
     `SELECT expires_at FROM urls WHERE short_code = $1 AND deleted_at IS NULL`,

@@ -66,6 +66,8 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
+future_updates.md
+
 # ⚠️ NOTE:
 # - Keep ONE lock file depending on your package manager.
 # - Remove others from ignore if you're using them.

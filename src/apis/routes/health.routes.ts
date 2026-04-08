@@ -10,7 +10,7 @@ const router = Router();
 router.get("/", livenessCheck);          
 router.get("/ready", readinessCheck);    
 
-// ✅ optional granular checks
+//  optional granular checks
 router.get("/full", fullHealthCheck);    // /health/full
 
 export default router;

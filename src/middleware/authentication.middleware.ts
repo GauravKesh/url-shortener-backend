@@ -30,9 +30,9 @@ export const authenticate = (
 
     // ✅ attach user
     req.user = {
-      userId: decoded.userId,
+      userId: Number(decoded.userId),
       role: decoded.role,
-      tenantId: decoded.organizationId,
+      tenantId: Number(decoded.organizationId),
     };
 
     return next();
