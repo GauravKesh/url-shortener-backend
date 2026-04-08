@@ -1,0 +1,43 @@
+import pool from "../config/database/postgresql.ts";
+export const createSession = async (data: any) => {
+  const { userId, tokenHash, device, ip, userAgent } = data;
+
+  await pool.query(
+    `INSERT INTO user_sessions 
+     (user_id, refresh_token_hash, device, ip_address, user_agent)
+     VALUES ($1,$2,$3,$4,$5)`,
+    [userId, tokenHash, device, ip, userAgent]
+  );
+};
+
+export const findSessionByToken = async (hash: string) => {
+  const { rows } = await pool.query(
+    "SELECT * FROM user_sessions WHERE refresh_token_hash = $1",
+    [hash]
+  );
+  return rows[0];
+};
+
+export const deactivateSession = async (id: number) => {
+  await pool.query(
+    "UPDATE user_sessions SET is_active = false WHERE id = $1",
+    [id]
+  );
+};
+
+export const deleteSession = async (hash: string) => {
+  await pool.query(
+    "DELETE FROM user_sessions WHERE refresh_token_hash = $1",
+    [hash]
+  );
+};
+
+export const getActiveSessions = async (userId: number) => {
+  const { rows } = await pool.query(
+    `SELECT * FROM user_sessions
+     WHERE user_id = $1 AND is_active = true
+     ORDER BY created_at ASC`,
+    [userId]
+  );
+  return rows;
+};
