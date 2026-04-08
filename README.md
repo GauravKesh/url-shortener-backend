@@ -194,7 +194,7 @@ MIT License
 
 ## 👨‍💻 Author
 
-**Gaurav Kesh Roushan**
+**Gaurav Kesh Roushan**\
 Backend Developer | Open Source Contributor
 
 ---
