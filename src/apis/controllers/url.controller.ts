@@ -22,7 +22,6 @@ import { AppError } from "../../utils/AppError.ts";
 export const create = async (req: Request, res: Response, next: NextFunction) => {
   try {
 
-    console.log(req.body);
 
     if (!req.user?.userId || !req.user?.tenantId) {
       throw new AppError(ERRORS.UNAUTHORIZED);

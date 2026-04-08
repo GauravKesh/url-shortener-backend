@@ -28,10 +28,7 @@ export const createUrlService = async ({
     userId,
     organizationId,
 }: any) => {
-      console.log(originalUrl,
-    shortCode,
-    userId,
-    organizationId,);
+
     if (!originalUrl) {
         throw new AppError(ERRORS.BAD_REQUEST);
     }
