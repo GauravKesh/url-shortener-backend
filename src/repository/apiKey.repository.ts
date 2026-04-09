@@ -66,10 +66,12 @@ export const getApiKeysByOrg = async (
 };
 
 
+
 // UPDATE API KEY (limits / name)
 
 export const updateApiKey = async (
   id: number,
+  organizationId: number,
   updates: any
 ) => {
   const keys = Object.keys(updates);
@@ -83,33 +85,45 @@ export const updateApiKey = async (
     `UPDATE api_keys 
      SET ${query} 
      WHERE id = $${keys.length + 1}
+     AND organization_id = $${keys.length + 2}
      RETURNING *`,
-    [...values, id]
+    [...values, id, organizationId]
   );
 
-  return rows[0];
+  return rows[0]; // undefined if not owner
 };
 
 
 // REVOKE API KEY
 
-export const revokeApiKey = async (id: number) => {
-  await pool.query(
+export const revokeApiKey = async (
+  id: number,
+  organizationId: number
+) => {
+  const { rowCount } = await pool.query(
     `UPDATE api_keys 
      SET revoked = true 
-     WHERE id = $1`,
-    [id]
+     WHERE id = $1 AND organization_id = $2`,
+    [id, organizationId]
   );
+
+  return rowCount; // 0 = not owner / not found
 };
 
 
 // DELETE API KEY (optional hard delete)
 
-export const deleteApiKey = async (id: number) => {
-  await pool.query(
-    `DELETE FROM api_keys WHERE id = $1`,
-    [id]
+export const deleteApiKey = async (
+  id: number,
+  organizationId: number
+) => {
+  const { rowCount } = await pool.query(
+    `DELETE FROM api_keys 
+     WHERE id = $1 AND organization_id = $2`,
+    [id, organizationId]
   );
+
+  return rowCount;
 };
 
 

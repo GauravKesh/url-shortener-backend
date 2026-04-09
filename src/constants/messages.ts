@@ -145,9 +145,13 @@ export const MESSAGES = {
 
   // API Key
   API_KEY_CREATED: "API key generated successfully",
+  API_KEY_DELETED: "API key deleted successfully",
   API_KEY_REVOKED: "API key revoked successfully",
   API_KEY_ROTATED: "API key rotated successfully",
+  API_KEY_UPDATED:"API key updated successfully",
+  API_KEYS_FETCHED:"API key fetched successfully",
   API_KEY_INVALID: "Invalid API key",
+
 
   // Notifications & webhook
   NOTIFICATION_SENT: "Notification sent successfully",

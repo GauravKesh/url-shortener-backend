@@ -14,6 +14,7 @@ const app = express();
 // CORE MIDDLEWARE
 
 //  GLOBAL LIMITER FIRST (DDoS protection)
+app.disable("x-powered-by");
 app.use(globalRateLimiter);
 
 // requestId FIRST (used everywhere)
