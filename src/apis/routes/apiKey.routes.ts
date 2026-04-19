@@ -10,25 +10,26 @@ import {
 
 import { authenticate } from "../../middleware/authentication.middleware.ts";
 
-const apiKeyRoute= Router();
+const apiKeyRoute = Router();
+apiKeyRoute.use(authenticate)
 
 
 // API KEY ROUTES
 
 // Create API Key
-apiKeyRoute.post("/", authenticate, create);
+apiKeyRoute.post("/", create);
 
 // Get all API Keys (org scoped)
-apiKeyRoute.get("/", authenticate, getAll);
+apiKeyRoute.get("/", getAll);
 
 // Update API Key
-apiKeyRoute.patch("/:id", authenticate, update);
+apiKeyRoute.patch("/:id", update);
 
 // Revoke API Key
-apiKeyRoute.post("/:id/revoke", authenticate, revoke);
+apiKeyRoute.post("/:id/revoke", revoke);
 
 // Delete API Key
-apiKeyRoute.delete("/:id", authenticate, deleteApiKey);
+apiKeyRoute.delete("/:id", deleteApiKey);
 
 
 export default apiKeyRoute;

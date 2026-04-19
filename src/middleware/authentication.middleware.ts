@@ -28,7 +28,7 @@ export const authenticate = (
 
     const decoded = jwt.verify(token, config.jwt.accessSecret) as any;
 
-    // ✅ attach user
+    //  attach user
     req.user = {
       userId: Number(decoded.userId),
       role: decoded.role,
@@ -37,7 +37,7 @@ export const authenticate = (
 
     return next();
   } catch (err: any) {
-    // 🔥 classify error properly
+    //  classify error properly
 
     if (err instanceof jwt.TokenExpiredError) {
       return httpError(

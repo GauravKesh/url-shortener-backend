@@ -28,7 +28,7 @@ export const apiKeyMiddleware = async (
         //  Inject into request (unified shape)
         req.user = {
             organizationId: Number(apiKey.organization_id),
-            authType: "apiKey"
+            authType: "API_KEY"
         };
 
         req.apiKey = apiKey; // (useful for rate limits, logs)

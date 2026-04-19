@@ -2,14 +2,14 @@ import {
   createSubscription,
   getActiveSubscription,
   deactivateSubscriptions
-} from "../repository/subscription.repository.ts";
+} from "../../repository/subscription.repository.ts";
 
 import {
   findOrgByUser,
   createOrganization
-} from "../repository/organization.repository.ts";
+} from "../../repository/organization.repository.ts";
 
-import { findPlanById } from "../repository/subscriptionPlan.repository.ts";
+import { findPlanById } from "../../repository/subscriptionPlan.repository.ts";
 
 // Purchase or upgrade a subscription plan
 export const purchasePlan = async (

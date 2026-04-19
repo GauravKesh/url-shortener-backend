@@ -2,9 +2,10 @@ import { Permission } from "../constants/permissions.ts";
 import { rolePermissions } from "../constants/rbac.ts";
 import { HTTP_STATUS, MESSAGES } from "../constants/index.ts";
 import { Role } from "../constants/roles.ts";
+import type {Request,Response, NextFunction } from "express";
 
 export const authorize = (...requiredPermissions: Permission[]) => {
-  return (req, res, next) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     try {
       const user = req.user;
 
@@ -15,10 +16,10 @@ export const authorize = (...requiredPermissions: Permission[]) => {
         });
       }
 
-      const role: Role = user.role;
-      const userPermissions = rolePermissions[role] || [];
+      const role = user.role;
+      const userPermissions = rolePermissions[role] ?? [];
 
-      // 🔥 admin override
+      // Admin override
       if (role === Role.ADMIN) {
         return next();
       }
@@ -35,7 +36,7 @@ export const authorize = (...requiredPermissions: Permission[]) => {
       }
 
       return next();
-    } catch (err) {
+    } catch {
       return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
         message: "Authorization failed",
