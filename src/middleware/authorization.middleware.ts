@@ -16,7 +16,7 @@ export const authorize = (...requiredPermissions: Permission[]) => {
         });
       }
 
-      const role = user.role;
+      const role = user.role as Role;
       const userPermissions = rolePermissions[role] ?? [];
 
       // Admin override

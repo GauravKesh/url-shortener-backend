@@ -2,11 +2,14 @@ import { Router } from "express";
 import authController from "../controllers/auth.controller.ts";
 import { authenticate } from "../../middleware/authentication.middleware.ts";
 
-const router = Router();
+const AuthRouter = Router();
 
-router.post("/signup", authController.signup);
-router.post("/login", authController.login);
-router.post("/logout", authController.logout);
-router.get("/me",authenticate, authController.me);
+AuthRouter.post("/signup", authController.signup);
+AuthRouter.post("/login", authController.login);
 
-export default router;
+AuthRouter.post("/logout", authController.logout);
+
+AuthRouter.use(authenticate)
+AuthRouter.get("/me", authController.me);
+AuthRouter.post("/refresh", authController.refresh);
+export default AuthRouter;
