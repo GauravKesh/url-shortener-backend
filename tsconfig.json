@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "rootDir": "./src",
+    "rootDir": ".",
     "outDir": "./dist",
 
     "baseUrl": "./",
@@ -14,7 +14,7 @@
     "moduleResolution": "NodeNext",
     "target": "ESNext",
 
-    "types": ["node"],
+    "types": ["node", "jest"],
 
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -31,5 +31,5 @@
     "rewriteRelativeImportExtensions": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["src"]
+  "include": ["src", "test", "test/**/*.d.ts"]
 }

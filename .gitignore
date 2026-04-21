@@ -37,6 +37,9 @@ pnpm-debug.log*
 # ------------------------------
 coverage/
 .nyc_output/
+AGENT_CONTEXT.md
+agent.context.ts
+pending.readme
 
 # ------------------------------
 # Cache
