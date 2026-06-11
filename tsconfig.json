@@ -18,6 +18,7 @@
 
     "esModuleInterop": true,
     "resolveJsonModule": true,
+    "ignoreDeprecations": "6.0",
 
     "sourceMap": true,
     "declaration": true,
