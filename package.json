@@ -12,6 +12,7 @@
     "build": "tsc && cp -R src/docs dist/docs",
     "migrate": "NODE_ENV=production tsx src/scripts/migrate.ts",
     "start": "node dist/src/server.js",
+    "setup": "npm install && npm run build",
     "test": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "keywords": [
