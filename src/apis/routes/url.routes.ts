@@ -11,7 +11,7 @@ import {
 } from "../controllers/url.controller.ts";
 
 import { authenticate } from "../../middleware/authentication.middleware.ts";
-import { apiRateLimiter } from "@/middleware/apiRateLimiter.middleware.ts";
+import { apiRateLimiter } from "../../middleware/apiRateLimiter.middleware.ts";
 
 const urlRoutes = Router();
 
