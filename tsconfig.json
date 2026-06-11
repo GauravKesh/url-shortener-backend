@@ -14,7 +14,7 @@
     "moduleResolution": "NodeNext",
     "target": "ESNext",
 
-    "types": ["node", "jest"],
+    "types": ["node"],
 
     "esModuleInterop": true,
     "resolveJsonModule": true,
