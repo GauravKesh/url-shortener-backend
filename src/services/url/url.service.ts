@@ -133,10 +133,11 @@ export const getOneUrlService = async (id: number, user: any) => {
 export const updateUrlService = async (id: number, user: any, updates: any) => {
     const existing = await findUrlById(id);
     if (!existing) throw new AppError(ERRORS.URL_NOT_FOUND);
-
+const existingUserId = Number(existing.user_id);
+const existingOrgId = Number(existing.organization_id);
     if (
-        existing.user_id !== user.userId &&
-        existing.organization_id !== user.tenantId
+        existingUserId !== user.userId &&
+        existingOrgId !== user.tenantId
     ) {
         throw new AppError(ERRORS.FORBIDDEN);
     }
