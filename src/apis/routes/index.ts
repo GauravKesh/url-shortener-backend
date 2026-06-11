@@ -11,13 +11,14 @@ import usageRoutes from "./usage.routes.ts";
 
 const routers = Router();
 
-routers.use("/auth", apiRateLimiter(10), authRoutes);
-routers.use("/user", apiRateLimiter(10), userRoutes);
-routers.use("/org", apiRateLimiter(10), OrganizationRouter);
-routers.use("/subscription", apiRateLimiter(10), subscriptionRouter);
-routers.use("/usage", apiRateLimiter(10), usageRoutes);
-routers.use("/apikey", apiRateLimiter(10), apiKeyRoutes);
+routers.use(apiRateLimiter(10))
+routers.use("/auth", authRoutes);
+routers.use("/user", userRoutes);
+routers.use("/org", OrganizationRouter);
+routers.use("/subscription", subscriptionRouter);
+routers.use("/usage", usageRoutes);
+routers.use("/apikey", apiKeyRoutes);
 routers.use("/health", healthRoutes)
-routers.use("/url", apiRateLimiter(10), urlRoutes)
+routers.use("/url", urlRoutes)
 
 export default routers;

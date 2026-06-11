@@ -1,6 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-
 import { ERRORS, HTTP_STATUS, MESSAGES } from "../constants/index.ts";
 import httpResponse from "../utils/httpResponse.ts";
 import httpError from "../utils/httpError.ts";
@@ -17,18 +16,17 @@ export const authenticate = (
       req.headers.authorization?.split(" ")[1];
 
     if (!token) {
-      return httpResponse(
-        req,
-        res,
-        HTTP_STATUS.UNAUTHORIZED,
-        MESSAGES.UNAUTHORIZED,
-        ERRORS.INVALID_TOKEN
-      );
+      // 401 — no token at all
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        success: false,
+        status: HTTP_STATUS.UNAUTHORIZED,
+        message: MESSAGES.UNAUTHORIZED,
+        error: ERRORS.INVALID_TOKEN,
+      });
     }
 
     const decoded = jwt.verify(token, config.jwt.accessSecret) as any;
 
-    //  attach user
     req.user = {
       userId: Number(decoded.userId),
       role: decoded.role,
@@ -37,26 +35,26 @@ export const authenticate = (
 
     return next();
   } catch (err: any) {
-    //  classify error properly
-
     if (err instanceof jwt.TokenExpiredError) {
-      return httpError(
-        next,
-        ERRORS.TOKEN_EXPIRED,
-        req,
-        { reason: "access token expired" }
-      );
+      // ✅ Must be a clean 401 so the frontend interceptor fires refresh
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        success: false,
+        status: HTTP_STATUS.UNAUTHORIZED,
+        message: "Access token expired",
+        error: ERRORS.TOKEN_EXPIRED, // e.g. "TOKEN_EXPIRED"
+      });
     }
 
     if (err instanceof jwt.JsonWebTokenError) {
-      return httpError(
-        next,
-        ERRORS.INVALID_TOKEN,
-        req,
-        { reason: err.message } // invalid signature / malformed
-      );
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        success: false,
+        status: HTTP_STATUS.UNAUTHORIZED,
+        message: "Invalid token",
+        error: ERRORS.INVALID_TOKEN,
+      });
     }
 
+    // Unexpected error — let global handler deal with it
     return httpError(next, err, req);
   }
 };

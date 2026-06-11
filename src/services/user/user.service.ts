@@ -30,7 +30,7 @@ export const getUserById = async (userId: number): Promise<IUserSafe> => {
     throw new AppError(ERRORS.USER_NOT_FOUND);
   }
 
-  return sanitizeUser(user);
+  return await sanitizeUser(user);
 };
 
 export const getUserByEmail = async (
@@ -41,7 +41,6 @@ export const getUserByEmail = async (
   if (!user) {
     throw new AppError(ERRORS.USER_NOT_FOUND);
   }
-
   return sanitizeUser(user);
 };
 

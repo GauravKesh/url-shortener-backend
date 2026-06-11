@@ -55,25 +55,19 @@ if (config.app.env === EApplicationEnvironment.DEVELOPMENT) {
   );
 }
 
+
 //  production → MongoDB logs
 if (config.app.env === EApplicationEnvironment.PRODUCTION) {
   logger.add(
     new winston.transports.MongoDB({
       level: "info",
-      db: config.db.mongoLogsUrl,
+      db: config.db.mongoLogsUrl, // ✅ plain connection string
       collection: "logs",
-
-      options: {
-        useUnifiedTopology: true,
-      },
-
       tryReconnect: true,
       capped: true,
-      cappedSize: 10000000, // ~10MB
-
+      cappedSize: 10000000,
       format: combine(timestamp(), json()),
     })
   );
 }
-
 export default logger;

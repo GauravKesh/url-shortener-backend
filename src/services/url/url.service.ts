@@ -1,7 +1,6 @@
 
 import {
     createUrl,
-    isShortCodeTaken,
     getUrlsByUser,
     getUrlsByOrg,
     countUrlsByUser,
@@ -13,9 +12,11 @@ import {
     incrementClicks,
 } from "../../repository/url.repository.ts";
 
+import config from "../../config/config.ts";
 import redisClient from "../../config/cache/redis.ts";
 import { AppError } from "../../utils/AppError.ts";
 import { ERRORS } from "../../constants/index.ts";
+import { generateShortCode } from "./generateShortCode.service.ts";
 
 const CACHE_TTL = 60 * 5;
 
@@ -33,22 +34,22 @@ export const createUrlService = async ({
         throw new AppError(ERRORS.BAD_REQUEST);
     }
 
-  
-
-
     if (shortCode) {
-        const exists = await isShortCodeTaken(shortCode);
-        if (exists) throw new AppError(ERRORS.ALIAS_TAKEN);
+        shortCode = await generateShortCode(shortCode);
     } else {
-        throw new AppError(ERRORS.BAD_REQUEST); // plug generator here later
+        shortCode = await generateShortCode();
     }
 
-    return createUrl({
+    const url = await createUrl({
         shortCode,
         originalUrl,
         userId,
         organizationId,
     });
+
+    return {
+        shortUrl: url.short_code,
+    };
 };
 
 /*

@@ -1,12 +1,39 @@
 import pool from "../config/database/postgresql.ts";
 export const createSession = async (data: any) => {
-  const { userId, tokenHash, device, ip, userAgent } = data;
+  const {
+    userId,
+    tokenHash,
+    device,
+    ip,
+    userAgent,
+  } = data;
+
+  const expiresAt = new Date(
+    Date.now() + 30 * 24 * 60 * 60 * 1000
+  ); // 30 days
+
+  console.log(expiresAt);
 
   await pool.query(
-    `INSERT INTO user_sessions 
-     (user_id, refresh_token_hash, device, ip_address, user_agent)
-     VALUES ($1,$2,$3,$4,$5)`,
-    [userId, tokenHash, device, ip, userAgent]
+    `
+    INSERT INTO user_sessions (
+      user_id,
+      refresh_token_hash,
+      device,
+      ip_address,
+      user_agent,
+      expires_at
+    )
+    VALUES ($1,$2,$3,$4,$5,$6)
+    `,
+    [
+      userId,
+      tokenHash,
+      device,
+      ip,
+      userAgent,
+      expiresAt,
+    ]
   );
 };
 

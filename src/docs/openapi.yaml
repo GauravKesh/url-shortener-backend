@@ -12,6 +12,10 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: accessToken
   schemas:
     ApiResponse:
       type: object
@@ -199,6 +203,7 @@ paths:
       summary: Current user
       security:
         - bearerAuth: []
+        - cookieAuth: []
       responses:
         "200":
           description: OK
@@ -219,6 +224,7 @@ paths:
       summary: Current user profile
       security:
         - bearerAuth: []
+        - cookieAuth: []
       responses:
         "200":
           description: OK
@@ -237,6 +243,7 @@ paths:
       summary: Update profile
       security:
         - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         required: true
         content:
@@ -262,6 +269,7 @@ paths:
       summary: Delete account
       security:
         - bearerAuth: []
+        - cookieAuth: []
       responses:
         "200":
           description: OK
@@ -281,6 +289,7 @@ paths:
       summary: Change password
       security:
         - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         required: true
         content:
@@ -308,6 +317,7 @@ paths:
       summary: Create organization
       security:
         - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         required: true
         content:
@@ -334,6 +344,7 @@ paths:
       summary: Current organization
       security:
         - bearerAuth: []
+        - cookieAuth: []
       responses:
         "200":
           description: OK
@@ -353,6 +364,7 @@ paths:
       summary: Get organization by id
       security:
         - bearerAuth: []
+        - cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -377,6 +389,7 @@ paths:
       summary: Update organization
       security:
         - bearerAuth: []
+        - cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -408,6 +421,7 @@ paths:
       summary: Delete organization
       security:
         - bearerAuth: []
+        - cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -434,6 +448,7 @@ paths:
       summary: Purchase subscription
       security:
         - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         required: true
         content:
@@ -460,6 +475,7 @@ paths:
       summary: Current subscription
       security:
         - bearerAuth: []
+        - cookieAuth: []
       responses:
         "200":
           description: OK
@@ -480,6 +496,7 @@ paths:
       summary: Current usage
       security:
         - bearerAuth: []
+        - cookieAuth: []
       responses:
         "200":
           description: OK
@@ -500,6 +517,7 @@ paths:
       summary: Create API key
       security:
         - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         required: true
         content:
@@ -525,6 +543,7 @@ paths:
       summary: List API keys
       security:
         - bearerAuth: []
+        - cookieAuth: []
       responses:
         "200":
           description: OK
@@ -544,6 +563,7 @@ paths:
       summary: Update API key
       security:
         - bearerAuth: []
+        - cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -575,6 +595,7 @@ paths:
       summary: Delete API key
       security:
         - bearerAuth: []
+        - cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -600,6 +621,7 @@ paths:
       summary: Revoke API key
       security:
         - bearerAuth: []
+        - cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -645,6 +667,7 @@ paths:
       summary: Create short URL
       security:
         - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         required: true
         content:
@@ -671,6 +694,7 @@ paths:
       summary: List user URLs
       security:
         - bearerAuth: []
+        - cookieAuth: []
       responses:
         "200":
           description: OK
@@ -690,6 +714,7 @@ paths:
       summary: List organization URLs
       security:
         - bearerAuth: []
+        - cookieAuth: []
       responses:
         "200":
           description: OK
@@ -709,6 +734,7 @@ paths:
       summary: Get URL by id
       security:
         - bearerAuth: []
+        - cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -733,6 +759,7 @@ paths:
       summary: Update URL
       security:
         - bearerAuth: []
+        - cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -764,6 +791,7 @@ paths:
       summary: Delete URL
       security:
         - bearerAuth: []
+        - cookieAuth: []
       parameters:
         - name: id
           in: path

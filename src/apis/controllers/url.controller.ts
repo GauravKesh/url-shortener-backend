@@ -35,7 +35,7 @@ export const create = async (req: Request, res: Response, next: NextFunction) =>
       organizationId: req.user.tenantId,
     });
 
-    return httpResponse(req, res, HTTP_STATUS.CREATED, MESSAGES.URL_CREATED, data);
+    return httpResponse(req, res, HTTP_STATUS.CREATED, MESSAGES.URL_CREATED, data.shortUrl);
   } catch (err) {
     httpError(next, err, req);
   }
@@ -137,7 +137,8 @@ export const deleteUrl = async (req: Request, res: Response, next: NextFunction)
 export const redirect = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const url = await redirectService(req.params.shortCode);
-    return res.redirect(url.original_url);
+
+    return httpResponse(req, res, HTTP_STATUS.OK, MESSAGES.URL_FETCHED,url.original_url);
   } catch (err) {
     httpError(next, err, req);
   }

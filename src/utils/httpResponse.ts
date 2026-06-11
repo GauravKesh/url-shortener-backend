@@ -6,13 +6,14 @@ const httpResponse = <T>(
   res: Response,
   status: number,
   message: string,
-  data?: T
+  data?: T,
+  role: string = "user"
 ) => {
   const response: ApiResponse<T> = {
     success: true,
     message,
     data,
-    requestId: req.requestId
+    requestId: req.requestId,
   };
 
   return res.status(status).json(response);

@@ -7,6 +7,7 @@ export interface AuthRequest extends Request {
   user?: {
     userId: number;
     organizationId?: number;
+   
   };
 }
 
@@ -23,6 +24,7 @@ export interface ApiKeyRequest extends Request {
 export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
+   role?:string|"user";
   data?: T | undefined;
   requestId?: string | undefined;
 }

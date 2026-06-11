@@ -69,7 +69,8 @@ export const signup = async ({
 
   const payload = {
     userId: user.id,
-    organizationId: organization?.id
+    organizationId: organization?.id,
+    role:user.role
   };
 
   const accessToken = signAccessToken(payload);
@@ -131,7 +132,7 @@ export const login = async ({
   const payload = {
     userId: user.id,
     organizationId: organization?.id,
-    tenantId:"232"
+    role:user.role
   };
 
   const accessToken = signAccessToken(payload);
@@ -156,42 +157,41 @@ export const login = async ({
 
 // REFRESH
 
+// REFRESH
 export const refresh = async (token: string) => {
   try {
     const hashed = hashToken(token);
-
     const session = await findSessionByToken(hashed);
 
     if (!session || !session.is_active) {
       throw new AppError(ERRORS.INVALID_SESSION);
     }
 
-    const decoded = jwt.verify(
-      token,
-      config.jwt.refreshSecret
-    ) as any;
+    const decoded = jwt.verify(token, config.jwt.refreshSecret) as any;
 
     const payload = {
       userId: decoded.userId,
-      organizationId: decoded.organizationId
+      organizationId: decoded.organizationId,
+      role: decoded.role,         // ✅ was missing in login payload too (see below)
     };
 
     const newAccessToken = signAccessToken(payload);
     const newRefreshToken = signRefreshToken(payload);
 
-    // rotate
+    // rotate — delete old, create new
     await deleteSession(hashed);
-
     await createSession({
       userId: decoded.userId,
-      tokenHash: hashToken(newRefreshToken)
+      tokenHash: hashToken(newRefreshToken),
     });
 
     return {
       accessToken: newAccessToken,
-      refreshToken: newRefreshToken
+      refreshToken: newRefreshToken,
     };
   } catch (err) {
+    // ✅ Rethrow so the controller returns 401, not 500
+    if (err instanceof AppError) throw err;
     throw new AppError(ERRORS.INVALID_SESSION);
   }
 };

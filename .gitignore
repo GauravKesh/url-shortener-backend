@@ -108,3 +108,11 @@ jest.setup.js
 *.pem
 *.key
 *.cert
+
+
+# ------------------------------
+# docker
+# ------------------------------
+# *.yml
+# Docker
+# Dockerfile

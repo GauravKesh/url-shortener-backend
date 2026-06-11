@@ -21,12 +21,13 @@ export default {
     try {
       const userId = (req as any).user?.userId;
 
+
       if (!userId) {
         throw new AppError(ERRORS.UNAUTHORIZED);
       }
 
       const user = await userService.getUserById(userId);
-
+      console.log("user:", user);
       return httpResponse(
         req,
         res,

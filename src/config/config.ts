@@ -1,5 +1,8 @@
 import { EApplicationEnvironment } from "../constants/env.ts";
 import dotenvFlow from "dotenv-flow";
+import type { Algorithm } from "jsonwebtoken";
+
+import ms, { type StringValue } from 'ms';
 
 dotenvFlow.config();
 
@@ -7,6 +10,7 @@ dotenvFlow.config();
 function required(name: string): string {
   const value = process.env[name];
   if (!value) {
+    console.log("MONGODB_ANALYTICS_URL:", process.env.MONGODB_ANALYTICS_URL);
     throw new Error(`❌ Missing required env: ${name}`);
   }
   return value;
@@ -40,9 +44,10 @@ const config = {
 
   db: {
     postgresUrl: required("POSTGRESQL_URL"),
+    sslCa: required("POSTGRES_SSL_CA"),
     mongoUrl: required("MONGODB_URL"),
     mongoAnalyticsUrl: required("MONGODB_ANALYTICS_URL"),
-    mongoLogsUrl: process.env.MONGODB_LOGS_URL || "",
+    mongoLogsUrl: required("MONGODB_LOGS_URL"),
   },
 
   redis: {
@@ -58,8 +63,10 @@ const config = {
   jwt: {
     accessSecret: required("JWT_ACCESS_SECRET"),
     refreshSecret: required("JWT_REFRESH_SECRET"),
-    accessExpiry: process.env.JWT_ACCESS_EXPIRY || "15m",
-    refreshExpiry: process.env.JWT_REFRESH_EXPIRY || "7d",
+    accessExpiry: ms(required("JWT_ACCESS_EXPIRY") as StringValue),
+    refreshExpiry: ms(required("JWT_REFRESH_EXPIRY") as StringValue),
+    algorithm: required("JWT_ALGORITHM") as Algorithm,
+
   },
 
   apiKey: {
