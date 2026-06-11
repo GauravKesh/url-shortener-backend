@@ -5,15 +5,13 @@
   "author": "Gaurav Kesh Roushan",
   "license": "MIT",
   "type": "module",
-  "main": "dist/server.js",
+  "main": "dist/src/server.js",
   "scripts": {
     "predev": "./scripts/start-services.sh",
     "dev": "NODE_ENV=development nodemon --exec ts-node -r tsconfig-paths/register src/server.ts",
     "build": "tsc && cp -R src/docs dist/docs",
     "migrate": "NODE_ENV=production tsx src/scripts/migrate.ts",
-    "start": "node dist/src/server.js",
-    "setup": "npm install && npm run build",
-    "test": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "start": "node dist/src/server.js"
   },
   "keywords": [
     "url-shortener",
@@ -43,19 +41,19 @@
     "yaml": "^2.5.1"
   },
   "devDependencies": {
-    "@types/cookie-parser": "^1.4.6",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/dotenv-flow": "^3.3.3",
     "@types/express": "^4.17.21",
-    "@types/jsonwebtoken": "^9.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/ms": "^2.1.0",
     "@types/node": "^20.19.39",
     "@types/pg": "^8.20.0",
     "@types/supertest": "^2.0.16",
     "@types/swagger-ui-express": "^4.1.6",
-    "jest-openapi": "^0.14.2",
     "nodemon": "^3.1.14",
     "supertest": "^6.3.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "5.9.3"
   }
 }
