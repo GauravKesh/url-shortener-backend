@@ -24,12 +24,14 @@ urlRoutes.get("/r/:shortCode", redirect);
   protected auth
 */
 
-urlRoutes.use(authenticate)
-
 /*
   Create short URL
 */
-urlRoutes.post("/create", create);
+
+
+urlRoutes.use(authenticate)
+
+
 
 /*
   Get URLs (separated)
