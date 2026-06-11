@@ -5,7 +5,6 @@ import logger from "../log/logger.ts";
 
 const { Pool } = pkg;
 
-console.log("POSTGRES URL:", config.db.postgresUrl);
 
 const pool = new Pool({
   connectionString: config.db.postgresUrl,
