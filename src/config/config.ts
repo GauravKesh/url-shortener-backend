@@ -33,6 +33,8 @@ const config = {
       EApplicationEnvironment.DEVELOPMENT,
     port: toNumber(process.env.PORT, 3000),
     baseUrl: required("BASE_URL"),
+    frontendUrl: required("FRONTEND_URL"),
+    adminUrl: required("ADMIN_URL"),
   },
 
   url: {

@@ -14,6 +14,7 @@ import { requestLogger } from "./middleware/requestLogger.middleware.ts";
 import { requestIdMiddleware } from "./middleware/requestId.middleware.ts";
 import { apiRateLimiter } from "./middleware/apiRateLimiter.middleware.ts";
 import { globalRateLimiter } from "./middleware/globalRateLimiter.middleware.ts";
+import config from "./config/config.ts";
 
 const app = express();
 
@@ -28,7 +29,17 @@ const __dirname = path.dirname(__filename);
 // CORE MIDDLEWARE
 
 // 🔹 CORS
-const allowedOrigins = ['http://localhost:3000'];
+const allowedOrigins =
+  process.env.NODE_ENV === "production"
+    ? [
+        config.app.frontendUrl,
+        config.app.adminUrl, // optional
+      ].filter(Boolean)
+    : [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+      ];
+
 
 const corsOptions = {
     origin: function (origin:any, callback:any) {
