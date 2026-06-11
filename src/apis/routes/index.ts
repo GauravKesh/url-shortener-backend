@@ -8,11 +8,13 @@ import userRoutes from "./user.routes.ts";
 import OrganizationRouter from "./organization.routes.ts";
 import subscriptionRouter from "./subscription.routes.ts";
 import usageRoutes from "./usage.routes.ts";
+import dashBoardRoutes from "./dashboard.routes.ts";
 
 const routers = Router();
 
 routers.use(apiRateLimiter(100))
 routers.use("/auth", authRoutes);
+routers.use("/dashboard", dashBoardRoutes);
 routers.use("/user", userRoutes);
 routers.use("/org", OrganizationRouter);
 routers.use("/subscription", subscriptionRouter);
