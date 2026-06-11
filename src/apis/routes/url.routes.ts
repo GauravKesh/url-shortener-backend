@@ -11,6 +11,7 @@ import {
 } from "../controllers/url.controller.ts";
 
 import { authenticate } from "../../middleware/authentication.middleware.ts";
+import { apiRateLimiter } from "@/middleware/apiRateLimiter.middleware.ts";
 
 const urlRoutes = Router();
 
@@ -19,19 +20,18 @@ const urlRoutes = Router();
   Public redirect (no auth)
 */
 urlRoutes.get("/r/:shortCode", redirect);
+urlRoutes.post("/create/public", create,apiRateLimiter(10));
+
 
 /*
   protected auth
-*/
-
-/*
-  Create short URL
 */
 
 
 urlRoutes.use(authenticate)
 
 
+urlRoutes.post("/create", create);
 
 /*
   Get URLs (separated)
