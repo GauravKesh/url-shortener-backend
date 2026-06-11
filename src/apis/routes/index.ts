@@ -11,7 +11,7 @@ import usageRoutes from "./usage.routes.ts";
 
 const routers = Router();
 
-routers.use(apiRateLimiter(10))
+routers.use(apiRateLimiter(100))
 routers.use("/auth", authRoutes);
 routers.use("/user", userRoutes);
 routers.use("/org", OrganizationRouter);
