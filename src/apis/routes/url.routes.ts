@@ -8,6 +8,7 @@ import {
   update,
   deleteUrl,
   redirect,
+  createPublic,
 } from "../controllers/url.controller.ts";
 
 import { authenticate } from "../../middleware/authentication.middleware.ts";
@@ -20,7 +21,7 @@ const urlRoutes = Router();
   Public redirect (no auth)
 */
 urlRoutes.get("/r/:shortCode", redirect);
-urlRoutes.post("/create/public", create,apiRateLimiter(10));
+urlRoutes.post("/create/public", createPublic,apiRateLimiter(10));
 
 
 /*

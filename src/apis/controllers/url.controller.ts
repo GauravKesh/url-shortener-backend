@@ -8,6 +8,7 @@ import {
   updateUrlService,
   deleteUrlService,
   redirectService,
+  createUrlServicePublic,
 } from "../../services/url/url.service.ts";
 
 import httpResponse from "../../utils/httpResponse.ts";
@@ -33,6 +34,21 @@ export const create = async (req: Request, res: Response, next: NextFunction) =>
       ...req.body,
       userId: req.user.userId,
       organizationId: req.user.tenantId,
+    });
+
+    return httpResponse(req, res, HTTP_STATUS.CREATED, MESSAGES.URL_CREATED, data.shortUrl);
+  } catch (err) {
+    httpError(next, err, req);
+  }
+};
+
+export const createPublic = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+
+
+
+    const data = await createUrlServicePublic({
+      ...req.body,
     });
 
     return httpResponse(req, res, HTTP_STATUS.CREATED, MESSAGES.URL_CREATED, data.shortUrl);

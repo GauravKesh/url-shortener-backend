@@ -52,6 +52,33 @@ export const createUrlService = async ({
     };
 };
 
+export const createUrlServicePublic = async ({
+    originalUrl,
+    shortCode,
+}: any) => {
+
+    if (!originalUrl) {
+        throw new AppError(ERRORS.BAD_REQUEST);
+    }
+
+    if (shortCode) {
+        shortCode = await generateShortCode(shortCode);
+    } else {
+        shortCode = await generateShortCode();
+    }
+
+    const url = await createUrl({
+        shortCode,
+        originalUrl,
+        userId:1,
+        organizationId:1,
+    });
+
+    return {
+        shortUrl: url.short_code,
+    };
+};
+
 /*
   Get user URLs
 */
