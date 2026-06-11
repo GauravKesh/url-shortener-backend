@@ -4,9 +4,7 @@ import cors from "cors";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
-// import YAML from "yaml";
-// import swaggerUi from "swagger-ui-express";
-// import OpenApiValidator from "express-openapi-validator";
+
 
 import routers from "./apis/routes/index.ts";
 import { globalErrorHandler } from "./middleware/globalErrorHandler.ts";
@@ -20,10 +18,7 @@ const app = express();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// const openApiSpecPath = path.join(__dirname, "docs", "openapi.yaml");
-// const openApiDocument = YAML.parse(
-//   fs.readFileSync(openApiSpecPath, "utf8")
-// );
+
 
 
 // CORE MIDDLEWARE
@@ -77,17 +72,25 @@ app.use(requestLogger);
 
 // ROUTES
 
-// app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
-// app.get("/api/docs.json", (_req, res) => res.json(openApiDocument));
-
-// app.use(
-//   "/api/v1",
-//   OpenApiValidator.middleware({
-//     apiSpec: openApiSpecPath,
-//     validateRequests: true,
-//     validateResponses: false
-//   })
-// );
+app.get("/", (req, res) => {
+  res.send(`
+    <html>
+      <head>
+        <title>Shortify API</title>
+      </head>
+      <body style="font-family:sans-serif;text-align:center;padding-top:100px">
+        <h1>🚀 Shortify API</h1>
+        <p>This is the backend server.</p>
+        <p>
+          Visit the frontend:
+          <a href="https://shortify.gkrcoder.me">
+            shortify
+          </a>
+        </p>
+      </body>
+    </html>
+  `);
+});
 
 app.use("/api/v1", routers);
 
