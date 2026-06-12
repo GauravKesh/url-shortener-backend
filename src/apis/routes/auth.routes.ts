@@ -8,8 +8,8 @@ AuthRouter.post("/signup", authController.signup);
 AuthRouter.post("/login", authController.login);
 
 AuthRouter.post("/logout", authController.logout);
-
+AuthRouter.post("/refresh", authController.refresh);
 AuthRouter.use(authenticate)
 AuthRouter.get("/me", authController.me);
-AuthRouter.post("/refresh", authController.refresh);
+
 export default AuthRouter;

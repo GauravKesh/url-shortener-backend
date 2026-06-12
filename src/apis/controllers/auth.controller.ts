@@ -118,48 +118,42 @@ export default {
 
 
   // Refresh Token
-refresh: async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const token = req.cookies?.refreshToken;
-    
+  refresh: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const token = req.cookies?.refreshToken;
 
-    if (!token) {
-      // ✅ Return 401 so frontend interceptor knows to redirect to login
+      if (!token) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          success: false,
+          message: MESSAGES.UNAUTHORIZED,
+          error: ERRORS.UNAUTHORIZED,
+        });
+      }
+
+      const data = await authService.refresh(token);
+
+      res.cookie("accessToken", data.accessToken, {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: "lax",
+        maxAge: 15 * 60 * 1000,
+      });
+
+      return httpResponse(req, res, HTTP_STATUS.OK, MESSAGES.SUCCESS, {
+        accessToken: data.accessToken,
+      });
+    } catch (err) {
+      // ✅ CRITICAL FIX: Clear the cookies so the frontend drops the dead session
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
+
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
-        message: MESSAGES.UNAUTHORIZED,
-        error: ERRORS.UNAUTHORIZED,
+        message: "Session expired, please log in again",
+        error: ERRORS.INVALID_SESSION,
       });
     }
-
-    const data = await authService.refresh(token);
-
-    res.cookie("refreshToken", data.refreshToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
-    });
-
-    res.cookie("accessToken", data.accessToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: "lax",
-      maxAge: 15 * 60 * 1000,            // 15 min — match signAccessToken expiry
-    });
-
-    return httpResponse(req, res, HTTP_STATUS.OK, MESSAGES.SUCCESS, {
-      accessToken: data.accessToken,
-    });
-  } catch (err) {
-    // ✅ Catch AppError(INVALID_SESSION) and return 401, not 500
-    return res.status(HTTP_STATUS.UNAUTHORIZED).json({
-      success: false,
-      message: "Session expired, please log in again",
-      error: ERRORS.INVALID_SESSION,
-    });
-  }
-},
+  },
 
 
   // Logout
