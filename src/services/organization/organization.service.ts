@@ -64,8 +64,6 @@ export const updateOrg = async (
     if (!org) {
         throw new AppError(ERRORS.NOT_FOUND);
     }   
-    // console.log(typeof org.owner_id, typeof userId);
-    // console.log(Number(org.owner_id) !== userId);
     if (Number(org.owner_id) !== userId) {
         throw new AppError(ERRORS.FORBIDDEN);
     }
@@ -94,4 +92,36 @@ export const removeOrg = async (
     await deleteOrganization(publicId);
 
     return true;
+};
+
+/**
+ * Updates ONLY the organization's cached tier tag.
+ * Acts as a secure, isolated gatekeeper for billing tier escalations.
+ */
+export const updateOrganizationPlanTag = async (
+  orgPublicId: string,
+  newPlanName: string
+) => {
+  // 1. Validate incoming identification presence
+  if (!orgPublicId) {
+    throw new AppError(ERRORS.BAD_REQUEST);
+  }
+
+  // 2. Enforce rigid string whitelisting against database configuration constraints
+  const VALID_PLANS = ["FREE", "PRO", "ENTERPRISE"];
+  if (!VALID_PLANS.includes(newPlanName.toUpperCase())) {
+    throw new AppError(ERRORS.PLAN_NOT_FOUND);
+  }
+
+  // 3. Execute the database transaction targeting ONLY the current_plan column
+  const updatedOrg = await updateOrganization(orgPublicId, {
+    current_plan: newPlanName.toUpperCase()
+  });
+
+  // 4. Handle unexpected downstream execution failures safely
+  if (!updatedOrg) {
+    throw new AppError(ERRORS.ORGANIZATION_NOT_FOUND);
+  }
+
+  return updatedOrg;
 };

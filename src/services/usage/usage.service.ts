@@ -11,7 +11,8 @@ import {
 const ALLOWED_FIELDS = [
   "url_count",
   "api_calls",
-  "clicks"
+  "clicks",
+  "links_created"
 ] as const;
 
 type UsageField = typeof ALLOWED_FIELDS[number];

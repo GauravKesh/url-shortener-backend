@@ -55,13 +55,14 @@ export const findOrgByUser = async (userId: number) => {
 
 export const updateOrganization = async (
   publicId: string,
-  updates: UpdateOrganizationPayload
+  updates: UpdateOrganizationPayload & { current_plan?: string }
 ) => {
   const allowedFields = [
     "name",
     "display_name",
     "slug",
     "description",
+    "current_plan", 
     "website_url",
     "logo_url",
     "support_email",
@@ -128,12 +129,6 @@ export const updateOrganization = async (
     .join(", ");
 
   values.push(publicId);
-
-  // Debug (remove in production)
-  console.log({
-    setClause,
-    values,
-  });
 
   const { rows } = await pool.query(
     `

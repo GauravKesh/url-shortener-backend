@@ -109,10 +109,10 @@ jest.setup.js
 *.key
 *.cert
 
-
 # ------------------------------
 # docker
 # ------------------------------
 # *.yml
 # Docker
 # Dockerfile
+src/config/database/postgresql.ts

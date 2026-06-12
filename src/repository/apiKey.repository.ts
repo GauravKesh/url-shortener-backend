@@ -1,4 +1,5 @@
 import pool from "../config/database/postgresql.ts";
+
 // CREATE API KEY
 export const createApiKey = async ({
   organizationId,
@@ -35,7 +36,6 @@ export const createApiKey = async ({
 
 
 // FIND API KEY (for auth middleware)
-
 export const findApiKeyByHash = async (keyHash: string) => {
   const { rows } = await pool.query(
     `SELECT * FROM api_keys 
@@ -48,7 +48,6 @@ export const findApiKeyByHash = async (keyHash: string) => {
 
 
 // GET ALL KEYS FOR ORG
-
 export const getApiKeysByOrg = async (
   orgId: number,
   limit = 10,
@@ -66,9 +65,7 @@ export const getApiKeysByOrg = async (
 };
 
 
-
 // UPDATE API KEY (limits / name)
-
 export const updateApiKey = async (
   id: number,
   organizationId: number,
@@ -95,7 +92,6 @@ export const updateApiKey = async (
 
 
 // REVOKE API KEY
-
 export const revokeApiKey = async (
   id: number,
   organizationId: number
@@ -112,7 +108,6 @@ export const revokeApiKey = async (
 
 
 // DELETE API KEY (optional hard delete)
-
 export const deleteApiKey = async (
   id: number,
   organizationId: number
@@ -128,11 +123,22 @@ export const deleteApiKey = async (
 
 
 // UPDATE LAST USED
-
 export const updateLastUsed = async (id: number) => {
   await pool.query(
     `UPDATE api_keys 
      SET last_used_at = NOW() 
+     WHERE id = $1`,
+    [id]
+  );
+};
+
+
+// INCREMENT API KEY LINK COUNT 🌟
+export const incrementApiKeyLinkCount = async (id: number) => {
+  await pool.query(
+    `UPDATE api_keys 
+     SET links_created = links_created + 1,
+         last_used_at = NOW() 
      WHERE id = $1`,
     [id]
   );

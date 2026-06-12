@@ -17,6 +17,7 @@ import redisClient from "../../config/cache/redis.ts";
 import { AppError } from "../../utils/AppError.ts";
 import { ERRORS } from "../../constants/index.ts";
 import { generateShortCode } from "./generateShortCode.service.ts";
+import { increment } from "../usage/usage.service.ts";
 
 const CACHE_TTL = 60 * 5;
 
@@ -47,6 +48,8 @@ export const createUrlService = async ({
         organizationId,
     });
 
+    await increment(organizationId, "links_created");
+
     return {
         shortUrl: url.short_code,
     };
@@ -70,8 +73,8 @@ export const createUrlServicePublic = async ({
     const url = await createUrl({
         shortCode,
         originalUrl,
-        userId:1,
-        organizationId:1,
+        userId: 1,
+        organizationId: 1,
     });
 
     return {
@@ -133,8 +136,8 @@ export const getOneUrlService = async (id: number, user: any) => {
 export const updateUrlService = async (id: number, user: any, updates: any) => {
     const existing = await findUrlById(id);
     if (!existing) throw new AppError(ERRORS.URL_NOT_FOUND);
-const existingUserId = Number(existing.user_id);
-const existingOrgId = Number(existing.organization_id);
+    const existingUserId = Number(existing.user_id);
+    const existingOrgId = Number(existing.organization_id);
     if (
         existingUserId !== user.userId &&
         existingOrgId !== user.tenantId

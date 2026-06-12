@@ -9,6 +9,8 @@ import OrganizationRouter from "./organization.routes.ts";
 import subscriptionRouter from "./subscription.routes.ts";
 import usageRoutes from "./usage.routes.ts";
 import dashBoardRoutes from "./dashboard.routes.ts";
+import devApiRoute from "./devApiKey.routes.ts";
+import orgDashboardRouter from "./orgdashboard.routes.ts";
 
 const routers = Router();
 
@@ -17,9 +19,11 @@ routers.use("/auth", authRoutes);
 routers.use("/dashboard", dashBoardRoutes);
 routers.use("/user", userRoutes);
 routers.use("/org", OrganizationRouter);
+routers.use("/org/dashboard", orgDashboardRouter);
 routers.use("/subscription", subscriptionRouter);
 routers.use("/usage", usageRoutes);
 routers.use("/apikey", apiKeyRoutes);
+routers.use("/dev", devApiRoute);
 routers.use("/health", healthRoutes)
 routers.use("/url", urlRoutes)
 

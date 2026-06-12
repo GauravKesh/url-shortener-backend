@@ -143,7 +143,6 @@ export default {
         accessToken: data.accessToken,
       });
     } catch (err) {
-      // ✅ CRITICAL FIX: Clear the cookies so the frontend drops the dead session
       res.clearCookie("accessToken");
       res.clearCookie("refreshToken");
 

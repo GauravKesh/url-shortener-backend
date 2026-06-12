@@ -16,7 +16,6 @@ export const authenticate = (
       req.headers.authorization?.split(" ")[1];
 
     if (!token) {
-      // 401 — no token at all
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
         status: HTTP_STATUS.UNAUTHORIZED,
@@ -36,12 +35,11 @@ export const authenticate = (
     return next();
   } catch (err: any) {
     if (err instanceof jwt.TokenExpiredError) {
-      // ✅ Must be a clean 401 so the frontend interceptor fires refresh
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
         status: HTTP_STATUS.UNAUTHORIZED,
         message: "Access token expired",
-        error: ERRORS.TOKEN_EXPIRED, // e.g. "TOKEN_EXPIRED"
+        error: ERRORS.TOKEN_EXPIRED, 
       });
     }
 
@@ -54,7 +52,6 @@ export const authenticate = (
       });
     }
 
-    // Unexpected error — let global handler deal with it
     return httpError(next, err, req);
   }
 };

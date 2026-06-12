@@ -29,6 +29,7 @@ export const getActiveSubscription = async (orgId: number) => {
      LIMIT 1`,
     [orgId]
   );
+  
 
   return rows[0];
 };
@@ -72,3 +73,4 @@ export const deactivateSubscriptions = async (orgId: number) => {
     [orgId]
   );
 };
+

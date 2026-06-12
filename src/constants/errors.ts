@@ -189,6 +189,11 @@ export const ERRORS = {
         message: "API key revoked",
         status: 401,
     },
+     API_KEY_LIMIT_REACHED: {
+        code: "API_403",
+        message: "API key Limit exceeded",
+        status: 401,
+    },
     API_KEY_SCOPES_INSUFFICIENT: {
         code: "API_403_SCOPE",
         message: "API key does not have required scope",
