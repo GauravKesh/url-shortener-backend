@@ -19,7 +19,7 @@ export default {
         try {
             const userId = req.user?.userId;
 
-            if (!userId) throw new AppError(ERRORS.UNAUTHORIZED);
+            if (!userId) throw new AppError(ERRORS.FORBIDDEN);
 
             const { name } = req.body;
 
@@ -44,7 +44,7 @@ export default {
         try {
             const userId = req.user?.userId;
 
-            if (!userId) throw new AppError(ERRORS.UNAUTHORIZED);
+            if (!userId) throw new AppError(ERRORS.FORBIDDEN);
 
             const org = await orgService.getMyOrganization(userId);
 
@@ -60,12 +60,12 @@ export default {
         }
     },
 
-    /* get org by id */
+    /* get org by public_id */
     getOne: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const orgId = Number(req.params.id);
+            const publicId = req.params.id;
 
-            const org = await orgService.getOrganizationById(orgId);
+            const org = await orgService.getOrganizationById(publicId);
 
             return httpResponse(
                 req,
@@ -83,11 +83,12 @@ export default {
     update: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const userId = req.user?.userId;
-            const orgId = Number(req.params.id);
+            
+            const publicId = req.params.id;
 
-            if (!userId) throw new AppError(ERRORS.UNAUTHORIZED);
+            if (!userId) throw new AppError(ERRORS.FORBIDDEN);
 
-            const org = await orgService.updateOrg(userId, orgId, req.body);
+            const org = await orgService.updateOrg(userId, publicId, req.body);
 
             return httpResponse(
                 req,
@@ -97,6 +98,7 @@ export default {
                 { organization: org }
             );
         } catch (err) {
+            console.log(err);
             httpError(next, err, req);
         }
     },
@@ -105,11 +107,12 @@ export default {
     delete: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const userId = req.user?.userId;
-            const orgId = Number(req.params.id);
+            
+            const publicId = req.params.id;
 
-            if (!userId) throw new AppError(ERRORS.UNAUTHORIZED);
+            if (!userId) throw new AppError(ERRORS.FORBIDDEN);
 
-            await orgService.removeOrg(userId, orgId);
+            await orgService.removeOrg(userId, publicId);
 
             return httpResponse(
                 req,

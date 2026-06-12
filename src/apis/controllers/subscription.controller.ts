@@ -20,7 +20,7 @@ export default {
       const userId = req.user?.userId;
 
       if (!userId) {
-        throw new AppError(ERRORS.UNAUTHORIZED);
+        throw new AppError(ERRORS.FORBIDDEN);
       }
 
       const { planId } = req.body;

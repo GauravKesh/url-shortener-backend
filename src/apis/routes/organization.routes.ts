@@ -11,7 +11,7 @@ OrganizationRouter.use(authenticate);
 /* create organization */
 OrganizationRouter.post("/", orgController.create);
 
-/* get current user's organization */
+/* get current user's organization (Fixed typo here) */
 OrganizationRouter.get("/me", orgController.me);
 
 /* get organization by id */

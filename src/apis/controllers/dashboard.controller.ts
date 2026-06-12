@@ -29,7 +29,7 @@ export default {
       console.log({userId,organizationId});
 
       if (!userId || !organizationId) {
-        throw new AppError(ERRORS.UNAUTHORIZED);
+        throw new AppError(ERRORS.FORBIDDEN);
       }
 
       const data = await dashboardService.getSummary({
@@ -58,7 +58,7 @@ export default {
       const organizationId = req.user?.tenantId
 
       if (!organizationId) {
-        throw new AppError(ERRORS.UNAUTHORIZED);
+        throw new AppError(ERRORS.FORBIDDEN);
       }
 
       const data = await dashboardService.getRecentUrls({
@@ -86,7 +86,7 @@ export default {
       const organizationId = req.user?.tenantId
 
       if (!organizationId) {
-        throw new AppError(ERRORS.UNAUTHORIZED);
+        throw new AppError(ERRORS.FORBIDDEN);
       }
 
       const data = await dashboardService.getTopUrls({

@@ -3,21 +3,25 @@ import { ERRORS } from "../../constants/index.ts";
 
 import {
     createOrganization,
-    findOrgById,
+    findOrgByPublicId,
     findOrgByUser,
     updateOrganization,
     deleteOrganization
 } from "../../repository/organization.repository.ts";
 
-/* get org by id */
-export const getOrganizationById = async (orgId: number) => {
-    const org = await findOrgById(orgId);
+/* get org by public_id */
+export const getOrganizationById = async (publicId: string) => {
+    const org = await findOrgByPublicId(publicId);
 
     if (!org) {
         throw new AppError(ERRORS.NOT_FOUND);
     }
 
-    return org;
+    return {
+    ...org,
+    id: Number(org.id),
+    owner_id: Number(org.owner_id),
+  };
 };
 
 /* get org of current user */
@@ -42,7 +46,7 @@ export const createOrg = async (
         return existing; // already has org
     }
 
-    const org = await createOrganization(name, userId);
+    const org = await createOrganization({name}, userId);
 
     return org;
 };
@@ -50,20 +54,24 @@ export const createOrg = async (
 /* update org (only owner allowed) */
 export const updateOrg = async (
     userId: number,
-    orgId: number,
+    publicId: string,
     updates: { name?: string }
 ) => {
-    const org = await findOrgById(orgId);
 
+    const org = await findOrgByPublicId(publicId);
+
+    // console.log(org);
     if (!org) {
         throw new AppError(ERRORS.NOT_FOUND);
+    }   
+    // console.log(typeof org.owner_id, typeof userId);
+    // console.log(Number(org.owner_id) !== userId);
+    if (Number(org.owner_id) !== userId) {
+        throw new AppError(ERRORS.FORBIDDEN);
     }
 
-    if (org.owner_id !== userId) {
-        throw new AppError(ERRORS.UNAUTHORIZED);
-    }
-
-    const updated = await updateOrganization(orgId, updates);
+    const updated = await updateOrganization(publicId, updates);
+    console.log(updated);
 
     return updated;
 };
@@ -71,19 +79,19 @@ export const updateOrg = async (
 /* delete org */
 export const removeOrg = async (
     userId: number,
-    orgId: number
+    publicId: string
 ) => {
-    const org = await findOrgById(orgId);
+    const org = await findOrgByPublicId(publicId);
 
     if (!org) {
         throw new AppError(ERRORS.NOT_FOUND);
     }
 
     if (org.owner_id !== userId) {
-        throw new AppError(ERRORS.UNAUTHORIZED);
+        throw new AppError(ERRORS.FORBIDDEN);
     }
 
-    await deleteOrganization(orgId);
+    await deleteOrganization(publicId);
 
     return true;
 };

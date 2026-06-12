@@ -62,7 +62,7 @@ export const signup = async ({
 
   if (organization_name) {
     organization = await createOrganization(
-      organization_name,
+      {name:organization_name},
       user.id
     );
   }

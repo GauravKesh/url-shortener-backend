@@ -21,7 +21,7 @@ export const purchasePlan = async (
 
   if (!org) {
     org = await createOrganization(
-      `user-${userId}-org`,
+      { name: `user-${userId}-org` },
       userId
     );
   }

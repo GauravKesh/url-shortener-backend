@@ -5,13 +5,15 @@ import logger from "../log/logger.ts";
 
 const { Pool } = pkg;
 
-
 const pool = new Pool({
   connectionString: config.db.postgresUrl,
-  ssl: {
-    ca: fs.readFileSync(config.db.sslCa, "utf8"),
-    rejectUnauthorized: true,
-  },
+  ssl:
+    process.env.NODE_ENV === "production"
+      ? {
+          ca: fs.readFileSync(config.db.sslCa, "utf8"),
+          rejectUnauthorized: true,
+        }
+      : false,
 });
 
 pool.on("connect", () => {

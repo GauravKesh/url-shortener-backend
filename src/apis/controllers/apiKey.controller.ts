@@ -1,3 +1,4 @@
+// backend/src/controllers/apiKey.controller.ts
 import type { Request, Response, NextFunction } from "express";
 
 import {
@@ -8,6 +9,7 @@ import {
     deleteApiKeyService
 } from "../../services/apikey/apiKey.service.ts";
 
+import { findOrgByUser } from "../../repository/organization.repository.ts"; // <-- Added to fetch correct org
 import httpResponse from "../../utils/httpResponse.ts";
 import httpError from "../../utils/httpError.ts";
 
@@ -15,18 +17,21 @@ import { ERRORS, HTTP_STATUS, MESSAGES } from "../../constants/index.ts";
 import { AppError } from "../../utils/AppError.ts";
 
 
+// Helper to get the correct organization integer ID for the current user
+const getOrgIdForUser = async (userId: number | undefined) => {
+    if (!userId) throw new AppError(ERRORS.FORBIDDEN);
+    const org = await findOrgByUser(userId);
+    if (!org) throw new AppError(ERRORS.FORBIDDEN, "Organization not found");
+    return org.id; // Return the database integer ID
+};
 
 // CREATE API KEY
-
-
 export const create = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!req.user?.tenantId) {
-            throw new AppError(ERRORS.UNAUTHORIZED);
-        }
+        const orgId = await getOrgIdForUser(req.user?.userId);
 
         const data = await createApiKeyService({
-            organizationId: req.user.tenantId,
+            organizationId: orgId,
             ...req.body
         });
 
@@ -42,21 +47,14 @@ export const create = async (req: Request, res: Response, next: NextFunction) =>
     }
 };
 
-
-
 // GET ALL API KEYS
-
-
 export const getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!req.user?.tenantId) {
-            throw new AppError(ERRORS.UNAUTHORIZED);
-        }
-
+        const orgId = await getOrgIdForUser(req.user?.userId);
         const { limit = 10, offset = 0 } = req.query;
 
         const keys = await getApiKeysService(
-            Number(req.user.tenantId),
+            orgId,
             Number(limit),
             Number(offset)
         );
@@ -68,10 +66,7 @@ export const getAll = async (req: Request, res: Response, next: NextFunction) =>
             MESSAGES.API_KEYS_FETCHED,
             {
                 items: keys,
-                pagination: {
-                    limit: Number(limit),
-                    offset: Number(offset)
-                }
+                pagination: { limit: Number(limit), offset: Number(offset) }
             }
         );
     } catch (err) {
@@ -79,19 +74,14 @@ export const getAll = async (req: Request, res: Response, next: NextFunction) =>
     }
 };
 
-
-
 // UPDATE API KEY
-
-
 export const update = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!req.user?.tenantId) {
-      throw new AppError(ERRORS.UNAUTHORIZED);
-    }
+        const orgId = await getOrgIdForUser(req.user?.userId);
+
         const updated = await updateApiKeyService(
             Number(req.params.id),
-            Number(req.user.tenantId),
+            orgId,
             req.body
         );
 
@@ -107,14 +97,12 @@ export const update = async (req: Request, res: Response, next: NextFunction) =>
     }
 };
 
-
-
 // REVOKE API KEY
-
-
 export const revoke = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        await revokeApiKeyService(Number(req.params.id),Number(req.user?.organizationId));
+        const orgId = await getOrgIdForUser(req.user?.userId);
+
+        await revokeApiKeyService(Number(req.params.id), orgId);
 
         return httpResponse(
             req,
@@ -127,18 +115,12 @@ export const revoke = async (req: Request, res: Response, next: NextFunction) =>
     }
 };
 
-
-
 // DELETE API KEY
-
-
-export const deleteApiKey = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
+export const deleteApiKey = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        await deleteApiKeyService(Number(req.params.id),Number(req.user?.organizationId));
+        const orgId = await getOrgIdForUser(req.user?.userId);
+
+        await deleteApiKeyService(Number(req.params.id), orgId);
 
         return httpResponse(
             req,

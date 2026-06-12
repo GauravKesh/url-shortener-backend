@@ -23,7 +23,7 @@ export default {
 
 
       if (!userId) {
-        throw new AppError(ERRORS.UNAUTHORIZED);
+        throw new AppError(ERRORS.FORBIDDEN);
       }
 
       const user = await userService.getUserById(userId);
@@ -52,7 +52,7 @@ export default {
       const userId = (req as any).user?.userId;
 
       if (!userId) {
-        throw new AppError(ERRORS.UNAUTHORIZED);
+        throw new AppError(ERRORS.FORBIDDEN);
       }
 
       const { name, avatar_url } = req.body;
@@ -86,7 +86,7 @@ export default {
       const userId = (req as any).user?.userId;
 
       if (!userId) {
-        throw new AppError(ERRORS.UNAUTHORIZED);
+        throw new AppError(ERRORS.FORBIDDEN);
       }
 
       const { oldPassword, newPassword } = req.body;
@@ -124,7 +124,7 @@ export default {
       const userId = (req as any).user?.userId;
 
       if (!userId) {
-        throw new AppError(ERRORS.UNAUTHORIZED);
+        throw new AppError(ERRORS.FORBIDDEN);
       }
 
       await userService.removeUser(userId);

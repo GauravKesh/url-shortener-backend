@@ -10,7 +10,8 @@
     "predev": "./scripts/start-services.sh",
     "dev": "NODE_ENV=development nodemon --exec ts-node -r tsconfig-paths/register src/server.ts",
     "build": "tsc && cp -R src/docs dist/docs",
-    "migrate": "NODE_ENV=production tsx src/scripts/migrate.ts",
+        "migrate:dev": "NODE_ENV=development tsx src/scripts/migrate.ts",
+    "migrate:prod": "NODE_ENV=production tsx src/scripts/migrate.ts",
     "start": "node dist/src/server.js"
   },
   "keywords": [

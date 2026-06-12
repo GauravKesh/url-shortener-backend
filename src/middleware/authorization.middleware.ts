@@ -10,9 +10,9 @@ export const authorize = (...requiredPermissions: Permission[]) => {
       const user = req.user;
 
       if (!user) {
-        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        return res.status(HTTP_STATUS.FORBIDDEN).json({
           success: false,
-          message: MESSAGES.UNAUTHORIZED,
+          message: MESSAGES.FORBIDDEN,
         });
       }
 

@@ -25,7 +25,7 @@ export const create = async (req: Request, res: Response, next: NextFunction) =>
 
 
     if (!req.user?.userId || !req.user?.tenantId) {
-      throw new AppError(ERRORS.UNAUTHORIZED);
+      throw new AppError(ERRORS.FORBIDDEN);
     }
 
 
