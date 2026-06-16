@@ -63,15 +63,20 @@ export const signup = async ({
 
   if (organization_name) {
     organization = await createOrganization(
-      {name:organization_name},
+      { name: organization_name },
       user.id
     );
   }
 
-   const FREE_PLAN_ID = 1; 
-   await createSubscription(
+  const freePlan = 1
+
+  if (!freePlan) {
+    throw new AppError(ERRORS.PLAN_NOT_FOUND);
+  }
+
+  await createSubscription(
     Number(organization.id),
-    FREE_PLAN_ID,
+    Number(freePlan),
     new Date(),
     null
   );
@@ -79,7 +84,7 @@ export const signup = async ({
   const payload = {
     userId: user.id,
     organizationId: organization?.id,
-    role:user.role
+    role: user.role
   };
 
   const accessToken = signAccessToken(payload);
@@ -128,7 +133,7 @@ export const login = async ({
   if (!valid) {
     throw new AppError(ERRORS.INVALID_CREDENTIALS);
   }
-  
+
   const organization = await findOrgByUser(user.id);
 
   // session limit
@@ -141,7 +146,7 @@ export const login = async ({
   const payload = {
     userId: user.id,
     organizationId: organization?.id,
-    role:user.role
+    role: user.role
   };
 
   const accessToken = signAccessToken(payload);
@@ -212,3 +217,7 @@ export const logout = async (token: string) => {
   const hashed = hashToken(token);
   await deleteSession(hashed);
 };
+
+function getPlanByName(arg0: string) {
+  throw new Error("Function not implemented.");
+}
