@@ -48,7 +48,7 @@ async function runMigrations() {
     );
 
     if (alreadyRun.rowCount) {
-      console.log(`⏭ Skipping ${file}`);
+      //console.log(`⏭ Skipping ${file}`);
       continue;
     }
 
@@ -64,7 +64,7 @@ async function runMigrations() {
 
     const start = Date.now();
 
-    console.log(`🚀 Running ${file}`);
+    //console.log(`🚀 Running ${file}`);
 
     await pool.query("BEGIN");
 
@@ -95,14 +95,14 @@ async function runMigrations() {
 
       await pool.query("COMMIT");
 
-      console.log(`✅ Applied ${file}`);
+      //console.log(`✅ Applied ${file}`);
     } catch (error) {
       await pool.query("ROLLBACK");
       throw error;
     }
   }
 
-  console.log("🎉 All migrations complete");
+  //console.log("🎉 All migrations complete");
 
   await pool.end();
   process.exit(0);

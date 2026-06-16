@@ -27,7 +27,7 @@ export default {
       }
 
       const user = await userService.getUserById(userId);
-      console.log("user:", user);
+      //console.log("user:", user);
       return httpResponse(
         req,
         res,

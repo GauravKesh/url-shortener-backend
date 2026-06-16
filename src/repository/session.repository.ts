@@ -12,7 +12,7 @@ export const createSession = async (data: any) => {
     Date.now() + 30 * 24 * 60 * 60 * 1000
   ); // 30 days
 
-  console.log(expiresAt);
+  //console.log(expiresAt);
 
   await pool.query(
     `

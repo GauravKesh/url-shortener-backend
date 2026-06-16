@@ -23,12 +23,12 @@ const startServer = async () => {
     await connectMongo();
 
     const server = app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
+      //console.log(`🚀 Server running on port ${PORT}`);
     });
 
     // 🔥 GRACEFUL SHUTDOWN
     const shutdown = async (signal: string) => {
-      console.log(`\n⚠️ Received ${signal}. Shutting down...`);
+      //console.log(`\n⚠️ Received ${signal}. Shutting down...`);
 
       await closeMongo();
 
@@ -41,7 +41,7 @@ const startServer = async () => {
       await pool.end();
 
       server.close(() => {
-        console.log("💤 Server closed");
+        //console.log("💤 Server closed");
         process.exit(0);
       });
     };

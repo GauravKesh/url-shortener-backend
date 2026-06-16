@@ -10,7 +10,7 @@ dotenvFlow.config();
 function required(name: string): string {
   const value = process.env[name];
   if (!value) {
-    console.log("MONGODB_ANALYTICS_URL:", process.env.MONGODB_ANALYTICS_URL);
+    //console.log("MONGODB_ANALYTICS_URL:", process.env.MONGODB_ANALYTICS_URL);
     throw new Error(`❌ Missing required env: ${name}`);
   }
   return value;

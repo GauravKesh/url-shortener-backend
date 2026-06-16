@@ -15,7 +15,7 @@ export const apiKeyMiddleware = async (
 ) => {
     try {
         const authHeader = req.headers.authorization;
-        console.log(authHeader);
+        //console.log(authHeader);
         // 1. Verify the presence and format of the Authorization header
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
             throw new AppError(
@@ -35,7 +35,7 @@ export const apiKeyMiddleware = async (
         // Type assertion ensures it aligns perfectly with your Postgres row payload
         const apiKey = await validateApiKeyService(rawKey);
 
-        console.log(apiKey);
+        //console.log(apiKey);
 
         // 4. Inject unified security context into the request object
         req.user = {

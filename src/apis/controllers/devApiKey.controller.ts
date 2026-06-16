@@ -68,7 +68,7 @@ export const createCustomUrl = async (req: Request, res: Response, next: NextFun
       expiryDays: calculatedExpiry
     });
 
-    // console.log(`${logPrefix} Success! Custom URL provisioned. Short code assigned: ${platformUrlData.shortUrl}`);
+    // //console.log(`${logPrefix} Success! Custom URL provisioned. Short code assigned: ${platformUrlData.shortUrl}`);
 
     //  Return the response back to their outside application code
     return httpResponse(

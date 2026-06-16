@@ -26,7 +26,7 @@ export default {
     try {
       const userId = req.user?.userId;
       const organizationId = req.user?.tenantId;
-      console.log({userId,organizationId});
+      //console.log({userId,organizationId});
 
       if (!userId || !organizationId) {
         throw new AppError(ERRORS.FORBIDDEN);

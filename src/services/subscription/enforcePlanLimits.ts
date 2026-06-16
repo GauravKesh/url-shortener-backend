@@ -11,12 +11,12 @@ export const enforceLinkCreationLimit = async (
   const current_plan = await getOrganizationPlan(
     organizationId
   );
-  console.log(current_plan);
+  //console.log(current_plan);
   const usage = await usageService.getCurrentUsage(Number(organizationId));
-  console.log(usage);
+  //console.log(usage);
 
   const plan = getPlan(current_plan);
-  console.log(plan);
+  //console.log(plan);
 
   if (
     plan.max_links &&

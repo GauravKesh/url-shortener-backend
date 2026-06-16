@@ -32,7 +32,7 @@ export default {
     try {
       const userId = req.user?.userId;
       const orgId = req.user?.tenantId;
-      console.log(orgId);
+      // //console.log(orgId);
 
       if (!userId) {
         throw new AppError(ERRORS.FORBIDDEN);
@@ -67,7 +67,7 @@ export default {
 
       const userId = req.user?.userId;
       const orgId = req.user?.tenantId;
-      console.log(orgId);
+      // //console.log(orgId);
 
       if (!orgId) {
         throw new AppError(ERRORS.NOT_FOUND);

@@ -61,7 +61,7 @@ export const updateOrg = async (
 
     const org = await findOrgByPublicId(publicId);
 
-    // console.log(org);
+    // //console.log(org);
     if (!org) {
         throw new AppError(ERRORS.NOT_FOUND);
     }   
@@ -70,7 +70,7 @@ export const updateOrg = async (
     }
 
     const updated = await updateOrganization(publicId, updates);
-    console.log(updated);
+    //console.log(updated);
 
     return updated;
 };

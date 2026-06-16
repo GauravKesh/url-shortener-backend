@@ -187,7 +187,7 @@ export default {
   // Current User
   me: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log("req.user:", req.user);
+      // //console.log("req.user:", req.user);
 
       const userId = req.user?.userId;
 

@@ -98,7 +98,7 @@ export default {
                 { organization: org }
             );
         } catch (err) {
-            console.log(err);
+            // //console.log(err);
             httpError(next, err, req);
         }
     },

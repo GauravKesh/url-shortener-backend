@@ -69,7 +69,7 @@ export const purchasePlan = async (
 export const getCurrentPlan = async (orgId: number) => {
   try {
     const subscription = await getActiveSubscription(orgId);
-    console.log("sucbscriptim daya",subscription);
+    //console.log("sucbscriptim daya",subscription);
     
     // Normalize return value to null if no record is found in the database
     return subscription ?? null;
