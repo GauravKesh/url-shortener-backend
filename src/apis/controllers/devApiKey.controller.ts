@@ -12,41 +12,41 @@ export const createCustomUrl = async (req: Request, res: Response, next: NextFun
     const orgId = req.user?.organizationId;
     const limits = req.apiKey; 
 
-    console.debug(`${logPrefix} Incoming request. Org ID: ${orgId}, API Key ID: ${limits?.id}`);
+    // console.debug(`${logPrefix} Incoming request. Org ID: ${orgId}, API Key ID: ${limits?.id}`);
 
     if (!orgId || !limits) {
-      console.warn(`${logPrefix} Unauthorized attempt. Context missing from request object.`);
+      // console.warn(`${logPrefix} Unauthorized attempt. Context missing from request object.`);
       throw new AppError(ERRORS.FORBIDDEN);
     }
 
-    // 1. Destructure client developer payload
+    //Destructure client developer payload
     const { longUrl, requestedSlug, expiryDays } = req.body;
-    console.debug(`${logPrefix} Payload parsed:`, { longUrl, requestedSlug, expiryDays });
+    // console.debug(`${logPrefix} Payload parsed:`, { longUrl, requestedSlug, expiryDays });
 
 
-    // --- 🛡️ GUARDRAIL 1: ENFORCE INDIVIDUAL API KEY LIMITS (ANTI-ABUSE) ---
+    //ENFORCE INDIVIDUAL API KEY LIMITS (ANTI-ABUSE) ---
     
     // Read tracker columns directly from your pre-loaded middleware context
     const apiKeyLinksCount = (limits as any).links_created ? Number((limits as any).links_created) : 0;
     const apiKeyMaxLimit = limits.max_links ? Number(limits.max_links) : null;
 
     if (apiKeyMaxLimit && apiKeyLinksCount >= apiKeyMaxLimit) {
-      console.warn(
-        `${logPrefix} Anti-abuse block: Key ID ${limits.id} exhausted its allocation (${apiKeyLinksCount}/${apiKeyMaxLimit}).`
-      );
+      // console.warn(
+      //   `${logPrefix} Anti-abuse block: Key ID ${limits.id} exhausted its allocation (${apiKeyLinksCount}/${apiKeyMaxLimit}).`
+      // );
       
-      // 🌟 Cleanly maps to your custom ERRORS dictionary definition
+      // Cleanly maps to your custom ERRORS dictionary definition
       throw new AppError(ERRORS.API_KEY_LIMIT_REACHED);
     }
 
 
-    // --- 🛡️ GUARDRAIL 2: ENFORCE EXPIRY CEILINGS ---
+    // ENFORCE EXPIRY CEILINGS ---
 
     // Validate custom expiry ceiling against snake_case DB column name
     if (limits.max_expiry_days && expiryDays > limits.max_expiry_days) {
-      console.warn(
-        `${logPrefix} Validation failed: Requested expiry (${expiryDays} days) exceeds limits.max_expiry_days (${limits.max_expiry_days} days) for Key ID: ${limits.id}`
-      );
+      // console.warn(
+      //   `${logPrefix} Validation failed: Requested expiry (${expiryDays} days) exceeds limits.max_expiry_days (${limits.max_expiry_days} days) for Key ID: ${limits.id}`
+      // );
       throw new AppError(
         ERRORS.BAD_REQUEST, 
         `Your API tier limits custom links to a maximum of ${limits.max_expiry_days} days.`
@@ -54,10 +54,10 @@ export const createCustomUrl = async (req: Request, res: Response, next: NextFun
     }
 
     const calculatedExpiry = expiryDays || limits.max_expiry_days || undefined;
-    console.debug(`${logPrefix} Executing link service with expiry window: ${calculatedExpiry} days`);
+    // console.debug(`${logPrefix} Executing link service with expiry window: ${calculatedExpiry} days`);
 
 
-    // --- 🚀 EXECUTION PIPELINE ---
+    // ---  EXECUTION PIPELINE ---
 
     // Run creation processing, passing down the key ID to bump cumulative tracking counters
     const platformUrlData = await createUrlViaApiKeyService({
@@ -68,9 +68,9 @@ export const createCustomUrl = async (req: Request, res: Response, next: NextFun
       expiryDays: calculatedExpiry
     });
 
-    console.log(`${logPrefix} Success! Custom URL provisioned. Short code assigned: ${platformUrlData.shortUrl}`);
+    // console.log(`${logPrefix} Success! Custom URL provisioned. Short code assigned: ${platformUrlData.shortUrl}`);
 
-    // 2. Return the response back to their outside application code
+    //  Return the response back to their outside application code
     return httpResponse(
       req,
       res,
@@ -84,7 +84,7 @@ export const createCustomUrl = async (req: Request, res: Response, next: NextFun
       }
     );
   } catch (err) {
-    console.error(`${logPrefix} Critical exception intercepted:`, err);
+    // console.error(`${logPrefix} Critical exception intercepted:`, err);
     httpError(next, err, req);
   }
 };

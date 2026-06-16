@@ -162,3 +162,20 @@ export const deleteOrganization = async (publicId: string) => {
 
   return rows[0] ?? null;
 };
+
+
+export const getOrganizationCurrentPlan = async (
+  id: number
+): Promise<string | null> => {
+  const { rows } = await pool.query(
+    `
+    SELECT current_plan
+    FROM organizations
+    WHERE id = $1
+      AND deleted_at IS NULL
+    `,
+    [id]
+  );
+
+  return rows[0]?.current_plan ?? null;
+};

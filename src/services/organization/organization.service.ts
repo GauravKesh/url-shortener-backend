@@ -6,7 +6,8 @@ import {
     findOrgByPublicId,
     findOrgByUser,
     updateOrganization,
-    deleteOrganization
+    deleteOrganization,
+    getOrganizationCurrentPlan
 } from "../../repository/organization.repository.ts";
 
 /* get org by public_id */
@@ -124,4 +125,20 @@ export const updateOrganizationPlanTag = async (
   }
 
   return updatedOrg;
+};
+
+
+// organization.service.ts
+
+export const getOrganizationPlan = async (
+  organizationId:number
+) => {
+  const planName =
+    await getOrganizationCurrentPlan(organizationId);
+
+  if (!planName) {
+    throw new AppError(ERRORS.ORGANIZATION_NOT_FOUND);
+  }
+
+  return planName;
 };

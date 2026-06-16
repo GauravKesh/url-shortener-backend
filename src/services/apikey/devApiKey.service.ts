@@ -24,7 +24,7 @@ export const createUrlViaApiKeyService = async ({
     originalUrl,
     shortCode,
     organizationId,
-    apiKeyId, // 🌟 Destructured parameter
+    apiKeyId, //  Destructured parameter
     expiryDays,
 }: CreateUrlViaApiKeyInput) => {
 
@@ -55,7 +55,7 @@ export const createUrlViaApiKeyService = async ({
         expiresAt,
     });
 
-    // 2. Increment Telemetry Tracking Metrics concurrently
+    //  Increment Telemetry Tracking Metrics concurrently
     // (We do this after successful DB creation so we don't overcount failed requests)
     await Promise.all([
         increment(organizationId, "api_calls"),     // Org Monthly Metric

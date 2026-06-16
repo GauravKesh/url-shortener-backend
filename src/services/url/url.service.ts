@@ -18,6 +18,7 @@ import { AppError } from "../../utils/AppError.ts";
 import { ERRORS } from "../../constants/index.ts";
 import { generateShortCode } from "./generateShortCode.service.ts";
 import { increment } from "../usage/usage.service.ts";
+import { enforceLinkCreationLimit } from "../subscription/enforcePlanLimits.ts";
 
 const CACHE_TTL = 60 * 5;
 
@@ -30,6 +31,8 @@ export const createUrlService = async ({
     userId,
     organizationId,
 }: any) => {
+
+    await enforceLinkCreationLimit(organizationId);
 
     if (!originalUrl) {
         throw new AppError(ERRORS.BAD_REQUEST);
