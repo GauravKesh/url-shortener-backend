@@ -25,6 +25,7 @@ import {
 } from "../../repository/session.repository.ts";
 
 import config from "../../config/config.ts";
+import { createSubscription } from "../../repository/subscription.repository.ts";
 
 const hashToken = (token: string) =>
   crypto.createHash("sha256").update(token).digest("hex");
@@ -66,6 +67,14 @@ export const signup = async ({
       user.id
     );
   }
+
+   const FREE_PLAN_ID = 1; 
+   await createSubscription(
+    Number(organization.id),
+    FREE_PLAN_ID,
+    new Date(),
+    null
+  );
 
   const payload = {
     userId: user.id,
