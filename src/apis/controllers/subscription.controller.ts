@@ -67,7 +67,6 @@ export default {
 
       const userId = req.user?.userId;
       const orgId = req.user?.tenantId;
-      // //console.log(orgId);
 
       if (!orgId) {
         throw new AppError(ERRORS.NOT_FOUND);
