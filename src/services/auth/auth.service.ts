@@ -59,7 +59,7 @@ export const signup = async ({
   const hashed = await hashPassword(password);
   const user = await createUser(email, hashed);
 
-  let organization = null;
+  let organization;
 
   if (organization_name) {
     organization = await createOrganization(
@@ -70,9 +70,9 @@ export const signup = async ({
 
   const freePlan = 1
 
-  if (!freePlan) {
-    throw new AppError(ERRORS.PLAN_NOT_FOUND);
-  }
+  // if (!freePlan) {
+  //   throw new AppError(ERRORS.PLAN_NOT_FOUND);
+  // }
 
   await createSubscription(
     Number(organization.id),
