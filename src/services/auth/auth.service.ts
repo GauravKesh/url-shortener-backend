@@ -74,12 +74,7 @@ export const signup = async ({
   //   throw new AppError(ERRORS.PLAN_NOT_FOUND);
   // }
 
-  await createSubscription(
-    Number(organization.id),
-    Number(freePlan),
-    new Date(),
-    null
-  );
+
 
   const payload = {
     userId: user.id,
@@ -94,6 +89,13 @@ export const signup = async ({
     userId: user.id,
     tokenHash: hashToken(refreshToken)
   });
+
+    await createSubscription(
+    Number(organization.id),
+    Number(freePlan),
+    new Date(),
+    null
+  );
 
   return {
     user: sanitizeUser(user),
