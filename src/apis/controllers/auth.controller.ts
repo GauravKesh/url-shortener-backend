@@ -42,7 +42,8 @@ export default {
         httpOnly: true,
         secure: isProd,
         sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        domain: '.gkrcoder.me',
       });
 
 
@@ -51,6 +52,7 @@ export default {
         secure: isProd,
         sameSite: "lax",
         maxAge: config.jwt.accessExpiry,
+        domain: '.gkrcoder.me',
       });
 
 
@@ -90,14 +92,16 @@ export default {
         httpOnly: true,
         secure: isProd,
         sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        domain: '.gkrcoder.me',
       });
 
       res.cookie("accessToken", data.accessToken, {
         httpOnly: true,
         secure: isProd,
         sameSite: "lax",
-        maxAge: 15 * 60 * 1000
+        maxAge: 15 * 60 * 1000,
+        domain: '.gkrcoder.me',
       });
 
       return httpResponse(
@@ -137,6 +141,7 @@ export default {
         secure: isProd,
         sameSite: "lax",
         maxAge: 15 * 60 * 1000,
+        domain: '.gkrcoder.me',
       });
 
       return httpResponse(req, res, HTTP_STATUS.OK, MESSAGES.SUCCESS, {
