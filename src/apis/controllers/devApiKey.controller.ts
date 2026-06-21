@@ -20,7 +20,7 @@ export const createCustomUrl = async (req: Request, res: Response, next: NextFun
     }
 
     //Destructure client developer payload
-    const { longUrl, requestedSlug, expiryDays } = req.body;
+    const { originalUrl, requestedSlug, expiryDays } = req.body;
     // console.debug(`${logPrefix} Payload parsed:`, { longUrl, requestedSlug, expiryDays });
 
 
@@ -63,7 +63,7 @@ export const createCustomUrl = async (req: Request, res: Response, next: NextFun
     const platformUrlData = await createUrlViaApiKeyService({
       organizationId: orgId,
       apiKeyId: Number(limits.id),
-      originalUrl: longUrl,          
+      originalUrl: originalUrl,          
       shortCode: requestedSlug,      
       expiryDays: calculatedExpiry
     });
