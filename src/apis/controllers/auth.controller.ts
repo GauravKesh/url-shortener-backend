@@ -3,6 +3,7 @@ import * as authService from "../../services/auth/auth.service.ts";
 import * as userService from "../../services/user/user.service.ts";
 
 
+
 import httpResponse from "../../utils/httpResponse.ts";
 import httpError from "../../utils/httpError.ts";
 
@@ -18,6 +19,29 @@ import config from "../../config/config.ts";
 // Environment check
 const isProd =
   process.env.NODE_ENV === EApplicationEnvironment.PRODUCTION;
+
+export const getCookieOptions = (
+  maxAge: number
+) => ({
+  httpOnly: true,
+  secure: isProd,
+  sameSite: isProd ? "none" : "lax",
+  ...(isProd && {
+    domain: ".gkrcoder.me",
+  }),
+  path: "/",
+  maxAge,
+});
+
+export const clearCookieOptions = {
+  httpOnly: true,
+  secure: isProd,
+  sameSite: isProd ? "none" : "lax",
+  ...(isProd && {
+    domain: ".gkrcoder.me",
+  }),
+  path: "/",
+};
 
 export default {
 
@@ -38,24 +62,17 @@ export default {
       });
 
       // set refresh token cookie
-      res.cookie("refreshToken", data.refreshToken, {
-        httpOnly: true,
-        secure: isProd,
-        sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        domain: '.gkrcoder.me',
-      });
+      res.cookie(
+        "refreshToken",
+        data.refreshToken,
+        getCookieOptions(7 * 24 * 60 * 60 * 1000)
+      );
 
-
-      res.cookie("accessToken", data.accessToken, {
-        httpOnly: true,
-        secure: isProd,
-        sameSite: "lax",
-        maxAge: config.jwt.accessExpiry,
-        domain: '.gkrcoder.me',
-      });
-
-
+      res.cookie(
+        "accessToken",
+        data.accessToken,
+        getCookieOptions(config.jwt.accessExpiry)
+      );
       return httpResponse(
         req,
         res,
@@ -88,22 +105,17 @@ export default {
         password
       });
 
-      res.cookie("refreshToken", data.refreshToken, {
-        httpOnly: true,
-        secure: isProd,
-        sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        domain: '.gkrcoder.me',
-      });
+      res.cookie(
+        "refreshToken",
+        data.refreshToken,
+        getCookieOptions(7 * 24 * 60 * 60 * 1000)
+      );
 
-      res.cookie("accessToken", data.accessToken, {
-        httpOnly: true,
-        secure: isProd,
-        sameSite: "lax",
-        maxAge: 15 * 60 * 1000,
-        domain: '.gkrcoder.me',
-      });
-
+      res.cookie(
+        "accessToken",
+        data.accessToken,
+        getCookieOptions(config.jwt.accessExpiry)
+      );
       return httpResponse(
         req,
         res,
@@ -136,13 +148,13 @@ export default {
 
       const data = await authService.refresh(token);
 
-      res.cookie("accessToken", data.accessToken, {
-        httpOnly: true,
-        secure: isProd,
-        sameSite: "lax",
-        maxAge: 15 * 60 * 1000,
-        domain: '.gkrcoder.me',
-      });
+
+
+      res.cookie(
+        "accessToken",
+        data.accessToken,
+        getCookieOptions(config.jwt.accessExpiry)
+      );
 
       return httpResponse(req, res, HTTP_STATUS.OK, MESSAGES.SUCCESS, {
         accessToken: data.accessToken,
@@ -175,9 +187,8 @@ export default {
         await authService.logout(refreshToken);
       }
 
-      res.clearCookie("accessToken");
-      res.clearCookie("refreshToken");
-
+      res.clearCookie("accessToken", clearCookieOptions);
+      res.clearCookie("refreshToken", clearCookieOptions);
       return httpResponse(
         req,
         res,
