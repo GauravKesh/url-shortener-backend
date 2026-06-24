@@ -1,8 +1,6 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction, CookieOptions } from "express";
 import * as authService from "../../services/auth/auth.service.ts";
 import * as userService from "../../services/user/user.service.ts";
-
-
 
 import httpResponse from "../../utils/httpResponse.ts";
 import httpError from "../../utils/httpError.ts";
@@ -17,12 +15,9 @@ import { AppError } from "../../utils/AppError.ts";
 import config from "../../config/config.ts";
 
 // Environment check
-const isProd =
-  process.env.NODE_ENV === EApplicationEnvironment.PRODUCTION;
+const isProd = process.env.NODE_ENV === EApplicationEnvironment.PRODUCTION;
 
-export const getCookieOptions = (
-  maxAge: number
-) => ({
+export const getCookieOptions = (maxAge: number): CookieOptions => ({
   httpOnly: true,
   secure: isProd,
   sameSite: isProd ? "none" : "lax",
@@ -33,7 +28,7 @@ export const getCookieOptions = (
   maxAge,
 });
 
-export const clearCookieOptions = {
+export const clearCookieOptions: CookieOptions = {
   httpOnly: true,
   secure: isProd,
   sameSite: isProd ? "none" : "lax",
@@ -46,7 +41,6 @@ export const clearCookieOptions = {
 export default {
 
   // Signup
-
   signup: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { email, password, organization_name } = req.body;
@@ -61,11 +55,11 @@ export default {
         organization_name
       });
 
-      // set refresh token cookie
+      // Fixed: invoked getCookieOptions with maxAge
       res.cookie(
         "refreshToken",
         data.refreshToken,
-        getCookieOptions(7 * 24 * 60 * 60 * 1000)
+        getCookieOptions(7 * 24 * 60 * 60 * 1000) 
       );
 
       res.cookie(
@@ -73,6 +67,7 @@ export default {
         data.accessToken,
         getCookieOptions(config.jwt.accessExpiry)
       );
+
       return httpResponse(
         req,
         res,
@@ -85,13 +80,10 @@ export default {
       );
     } catch (err) {
       httpError(next, err, req);
-
     }
   },
 
-
   // Login
-
   login: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { email, password } = req.body;
@@ -116,6 +108,7 @@ export default {
         data.accessToken,
         getCookieOptions(config.jwt.accessExpiry)
       );
+
       return httpResponse(
         req,
         res,
@@ -124,14 +117,12 @@ export default {
         {
           user: data.user,
           organization: data.organization,
-          // accessToken: data.accessToken
         }
       );
     } catch (err) {
       httpError(next, err, req);
     }
   },
-
 
   // Refresh Token
   refresh: async (req: Request, res: Response, next: NextFunction) => {
@@ -148,8 +139,6 @@ export default {
 
       const data = await authService.refresh(token);
 
-
-
       res.cookie(
         "accessToken",
         data.accessToken,
@@ -160,8 +149,8 @@ export default {
         accessToken: data.accessToken,
       });
     } catch (err) {
-      res.clearCookie("accessToken");
-      res.clearCookie("refreshToken");
+      res.clearCookie("accessToken", clearCookieOptions);
+      res.clearCookie("refreshToken", clearCookieOptions);
 
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
@@ -171,17 +160,10 @@ export default {
     }
   },
 
-
   // Logout
-
-  logout: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  logout: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const refreshToken =
-        req.cookies?.refreshToken;
+      const refreshToken = req.cookies?.refreshToken;
 
       if (refreshToken) {
         await authService.logout(refreshToken);
@@ -189,6 +171,7 @@ export default {
 
       res.clearCookie("accessToken", clearCookieOptions);
       res.clearCookie("refreshToken", clearCookieOptions);
+
       return httpResponse(
         req,
         res,
@@ -203,8 +186,6 @@ export default {
   // Current User
   me: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // //console.log("req.user:", req.user);
-
       const userId = req.user?.userId;
 
       if (!userId) {
