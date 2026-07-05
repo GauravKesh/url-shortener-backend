@@ -124,6 +124,13 @@ const config = {
   queue: {
     name: process.env.QUEUE_NAME || "url-jobs",
     concurrency: toNumber(process.env.WORKER_CONCURRENCY, 5),
+
+  },
+  qstash: {
+    url: process.env.QSTASH_URL!,
+    token: process.env.QSTASH_TOKEN!,
+    currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY!,
+    nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY!,
   },
 
   admin: {

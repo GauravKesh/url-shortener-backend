@@ -1,4 +1,4 @@
-import { getAnalyticsDB } from "../config/index.ts";
+import { getAnalyticsDB } from "../../config/index.ts";
 import mongoose from "mongoose";
 
 const UrlAnalyticsSchema = new mongoose.Schema(

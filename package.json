@@ -10,7 +10,7 @@
     "predev": "./scripts/start-services.sh",
     "dev": "NODE_ENV=development nodemon --exec ts-node -r tsconfig-paths/register src/server.ts",
     "build": "tsc && cp -R src/docs dist/docs",
-        "migrate:dev": "NODE_ENV=development tsx src/scripts/migrate.ts",
+    "migrate:dev": "NODE_ENV=development tsx src/scripts/migrate.ts",
     "migrate:prod": "NODE_ENV=production tsx src/scripts/migrate.ts",
     "start": "node dist/src/server.js"
   },
@@ -21,6 +21,7 @@
     "typescript"
   ],
   "dependencies": {
+    "@upstash/qstash": "^2.11.1",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
