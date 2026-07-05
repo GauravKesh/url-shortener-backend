@@ -25,15 +25,15 @@ export const createOrganization = async (
   return rows[0];
 };
 
-export const findOrgByPublicId = async (publicId: string) => {
+export const findOrgByOrganizationId = async (organizationId: string) => {
   const { rows } = await pool.query(
     `
     SELECT *
     FROM organizations
-    WHERE public_id = $1
+    WHERE organization_id = $1
       AND deleted_at IS NULL
     `,
-    [publicId]
+    [organizationId]
   );
 
   return rows[0] ?? null;
@@ -54,7 +54,7 @@ export const findOrgByUser = async (userId: number) => {
 };
 
 export const updateOrganization = async (
-  publicId: string,
+  organizationId: string,
   updates: UpdateOrganizationPayload & { current_plan?: string }
 ) => {
   const allowedFields = [
@@ -128,7 +128,7 @@ export const updateOrganization = async (
     })
     .join(", ");
 
-  values.push(publicId);
+  values.push(organizationId);
 
   const { rows } = await pool.query(
     `
@@ -136,7 +136,7 @@ export const updateOrganization = async (
     SET
       ${setClause},
       updated_at = NOW()
-    WHERE public_id = $${values.length}
+    WHERE organization_id = $${values.length}
       AND deleted_at IS NULL
     RETURNING *
     `,
@@ -146,18 +146,18 @@ export const updateOrganization = async (
   return rows[0] ?? null;
 };
 
-export const deleteOrganization = async (publicId: string) => {
+export const deleteOrganization = async (organizationId: string) => {
   const { rows } = await pool.query(
     `
     UPDATE organizations
     SET
       deleted_at = NOW(),
       updated_at = NOW()
-    WHERE public_id = $1
+    WHERE organization_id = $1
       AND deleted_at IS NULL
     RETURNING *
     `,
-    [publicId]
+    [organizationId]
   );
 
   return rows[0] ?? null;

@@ -15,12 +15,12 @@ OrganizationRouter.post("/", orgController.create);
 OrganizationRouter.get("/me", orgController.me);
 
 /* get organization by id */
-OrganizationRouter.get("/:id", orgController.getOne);
+OrganizationRouter.get("/:organizationId", orgController.getOne);
 
 /* update organization */
-OrganizationRouter.patch("/:id", orgController.update);
+OrganizationRouter.patch("/:organizationId", orgController.update);
 
 /* delete organization */
-OrganizationRouter.delete("/:id", orgController.delete);
+OrganizationRouter.delete("/:organizationId", orgController.delete);
 
 export default OrganizationRouter;

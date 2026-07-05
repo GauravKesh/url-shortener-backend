@@ -16,14 +16,14 @@ export default {
       }
 
       // 2. Extract orgPublicId from URL context path parameters (e.g., /api/v1/dashboard/:orgPublicId)
-      const { orgPublicId } = req.params;
+      const { organizationId } = req.params;
 
-      if (!orgPublicId) {
+      if (!organizationId) {
         throw new AppError(ERRORS.BAD_REQUEST);
       }
 
       // 🧠 Pass the correct string key context over to the database execution layers
-      const dashboardData = await dashboardService.getDashboardSummary(orgPublicId);
+      const dashboardData = await dashboardService.getDashboardSummary(organizationId);
 
       // 3. Optional: Add a security boundary verification here if needed
       // (e.g., verify if userId belongs to the organization context before returning dashboardData)

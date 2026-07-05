@@ -14,6 +14,7 @@ import {
 //FORBIDDEN Imported findAllPlans alongside findPlanById
 import { 
   findPlanById, 
+  findPlanByPlanId,
   findAllPlans 
 } from "../../repository/subscriptionPlan.repository.ts";
 
@@ -27,7 +28,7 @@ export const getAllPlans = async () => {
 // Purchase or upgrade a subscription plan
 export const purchasePlan = async (
   userId: number,
-  planId: number
+  planId: string
 ) => {
   let org = await findOrgByUser(userId);
 
@@ -40,7 +41,7 @@ export const purchasePlan = async (
 
   await deactivateSubscriptions(org.id);
 
-  const plan = await findPlanById(planId);
+  const plan = await findPlanByPlanId(planId);
   if (!plan) throw new Error("Invalid plan");
 
   const startDate = new Date();
@@ -53,7 +54,7 @@ export const purchasePlan = async (
 
   const subscription = await createSubscription(
     org.id,
-    planId,
+    plan.id,
     startDate,
     endDate
   );

@@ -1,17 +1,17 @@
 import * as dashboardRepo from "../../repository/orgDashboard.repository.ts";
-import { findOrgByPublicId } from "../../repository/organization.repository.ts";
+import { findOrgByOrganizationId } from "../../repository/organization.repository.ts";
 import { findPlanByName } from "../../repository/subscriptionPlan.repository.ts";
 import { AppError } from "../../utils/AppError.ts";
 import { ERRORS } from "../../constants/index.ts";
 
-export const getDashboardSummary = async (orgPublicId: string) => {
-  // 1. Ensure public_id parameter exists
-  if (!orgPublicId) {
+export const getDashboardSummary = async (organizationId: string) => {
+  // 1. Ensure organizationid parameter exists
+  if (!organizationId) {
     throw new AppError(ERRORS.BAD_REQUEST);
   }
 
   // 2. Resolve organization context by its public UUID/String identifier
-  const org = await findOrgByPublicId(orgPublicId);
+  const org = await findOrgByOrganizationId(organizationId);
   if (!org) {
     throw new AppError(ERRORS.ORGANIZATION_NOT_FOUND);
   }
@@ -36,7 +36,7 @@ export const getDashboardSummary = async (orgPublicId: string) => {
   // 5. Structural map for frontend visualization
   return {
     organization: {
-      public_id: org.public_id,
+      organizationId: org.organization_id,
       name: org.name,
       current_plan: org.current_plan,
     },

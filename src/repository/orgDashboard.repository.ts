@@ -17,7 +17,7 @@ export const getDashboardCounters = async (orgId: number) => {
 export const getTopPerformingLinks = async (orgId: number, limit = 5) => {
   const { rows } = await pool.query(
     `
-    SELECT short_code, original_url, clicks, status, created_at
+    SELECT urlid, short_code, original_url, clicks, status, created_at
     FROM urls
     WHERE organization_id = $1 AND deleted_at IS NULL
     ORDER BY clicks DESC, created_at DESC
@@ -31,7 +31,7 @@ export const getTopPerformingLinks = async (orgId: number, limit = 5) => {
 export const getRecentLinks = async (orgId: number, limit = 5) => {
   const { rows } = await pool.query(
     `
-    SELECT short_code, original_url, clicks, status, created_at
+    SELECT urlid, short_code, original_url, clicks, status, created_at
     FROM urls
     WHERE organization_id = $1 AND deleted_at IS NULL
     ORDER BY created_at DESC

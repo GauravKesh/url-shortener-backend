@@ -6,6 +6,7 @@ import {
     countUrlsByUser,
     countUrlsByOrg,
     findUrlById,
+    findUrlByUrlId,
     updateUrl,
     deleteUrl,
     findUrl,
@@ -19,6 +20,7 @@ import { ERRORS } from "../../constants/index.ts";
 import { generateShortCode } from "./generateShortCode.service.ts";
 import { increment } from "../usage/usage.service.ts";
 import { enforceLinkCreationLimit } from "../subscription/enforcePlanLimits.ts";
+import { findDomainByDomainId } from "../../repository/domain.repository.ts";
 
 const CACHE_TTL = 60 * 5;
 
@@ -30,12 +32,22 @@ export const createUrlService = async ({
     shortCode,
     userId,
     organizationId,
+    domainId,
+    expiresAt,
 }: any) => {
 
     await enforceLinkCreationLimit(organizationId);
 
     if (!originalUrl) {
         throw new AppError(ERRORS.BAD_REQUEST);
+    }
+
+    const resolvedDomainId = domainId
+        ? Number((await findDomainByDomainId(domainId, organizationId))?.id)
+        : null;
+
+    if (domainId && !resolvedDomainId) {
+        throw new AppError(ERRORS.NOT_FOUND);
     }
 
     if (shortCode) {
@@ -49,6 +61,8 @@ export const createUrlService = async ({
         originalUrl,
         userId,
         organizationId,
+        domainId: resolvedDomainId,
+        expiresAt,
     });
 
     await increment(organizationId, "links_created");
@@ -112,13 +126,13 @@ export const getOrgUrlsService = async (orgId: number, limit: number, offset: nu
 /*
   Get one URL (with cache + auth check)
 */
-export const getOneUrlService = async (id: number, user: any) => {
-    const cacheKey = `url:id:${id}`;
+export const getOneUrlService = async (urlId: string, user: any) => {
+    const cacheKey = `url:urlId:${urlId}`;
 
     const cached = await redisClient.get(cacheKey);
     if (cached) return JSON.parse(cached);
 
-    const url = await findUrlById(id);
+    const url = await findUrlByUrlId(urlId);
     if (!url) throw new AppError(ERRORS.URL_NOT_FOUND);
 
     if (
@@ -136,8 +150,8 @@ export const getOneUrlService = async (id: number, user: any) => {
 /*
   Update URL
 */
-export const updateUrlService = async (id: number, user: any, updates: any) => {
-    const existing = await findUrlById(id);
+export const updateUrlService = async (urlId: string, user: any, updates: any) => {
+    const existing = await findUrlByUrlId(urlId);
     if (!existing) throw new AppError(ERRORS.URL_NOT_FOUND);
     const existingUserId = Number(existing.user_id);
     const existingOrgId = Number(existing.organization_id);
@@ -148,10 +162,26 @@ export const updateUrlService = async (id: number, user: any, updates: any) => {
         throw new AppError(ERRORS.FORBIDDEN);
     }
 
-    const updated = await updateUrl(id, updates);
+    const normalizedUpdates = { ...updates };
+
+    if (normalizedUpdates.domainId !== undefined) {
+        const domain = await findDomainByDomainId(
+            String(normalizedUpdates.domainId),
+            existingOrgId
+        );
+
+        if (!domain) {
+            throw new AppError(ERRORS.NOT_FOUND);
+        }
+
+        normalizedUpdates.domain_id = Number(domain.id);
+        delete normalizedUpdates.domainId;
+    }
+
+    const updated = await updateUrl(urlId, normalizedUpdates);
     if (!updated) throw new AppError(ERRORS.BAD_REQUEST);
 
-    await redisClient.del(`url:id:${id}`);
+    await redisClient.del(`url:urlId:${urlId}`);
 
     return updated;
 };
@@ -159,11 +189,11 @@ export const updateUrlService = async (id: number, user: any, updates: any) => {
 /*
   Delete URL
 */
-export const deleteUrlService = async (id: number, orgId: number) => {
-    const success = await deleteUrl(id, orgId);
+export const deleteUrlService = async (urlId: string, orgId: number) => {
+    const success = await deleteUrl(urlId, orgId);
     if (!success) throw new AppError(ERRORS.URL_NOT_FOUND);
 
-    await redisClient.del(`url:id:${id}`);
+    await redisClient.del(`url:urlId:${urlId}`);
 };
 
 /*

@@ -358,15 +358,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-  /org/{id}:
+  /org/{organizationId}:
     get:
       tags: [Organization]
-      summary: Get organization by id
+      summary: Get organization by organizationId
       security:
         - bearerAuth: []
         - cookieAuth: []
       parameters:
-        - name: id
+        - name: organizationId
           in: path
           required: true
           schema:
@@ -391,7 +391,7 @@ paths:
         - bearerAuth: []
         - cookieAuth: []
       parameters:
-        - name: id
+        - name: organizationId
           in: path
           required: true
           schema:
@@ -423,7 +423,7 @@ paths:
         - bearerAuth: []
         - cookieAuth: []
       parameters:
-        - name: id
+        - name: organizationId
           in: path
           required: true
           schema:
@@ -557,7 +557,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-  /apikey/{id}:
+  /apikey/{apiKeyId}:
     patch:
       tags: [API Key]
       summary: Update API key
@@ -565,7 +565,7 @@ paths:
         - bearerAuth: []
         - cookieAuth: []
       parameters:
-        - name: id
+        - name: apiKeyId
           in: path
           required: true
           schema:
@@ -597,7 +597,7 @@ paths:
         - bearerAuth: []
         - cookieAuth: []
       parameters:
-        - name: id
+        - name: apiKeyId
           in: path
           required: true
           schema:
@@ -615,7 +615,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-  /apikey/{id}/revoke:
+  /apikey/{apiKeyId}/revoke:
     post:
       tags: [API Key]
       summary: Revoke API key
@@ -623,7 +623,7 @@ paths:
         - bearerAuth: []
         - cookieAuth: []
       parameters:
-        - name: id
+        - name: apiKeyId
           in: path
           required: true
           schema:
@@ -728,15 +728,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-  /url/{id}:
+  /url/{urlId}:
     get:
       tags: [URL]
-      summary: Get URL by id
+      summary: Get URL by urlId
       security:
         - bearerAuth: []
         - cookieAuth: []
       parameters:
-        - name: id
+        - name: urlId
           in: path
           required: true
           schema:
@@ -761,7 +761,7 @@ paths:
         - bearerAuth: []
         - cookieAuth: []
       parameters:
-        - name: id
+        - name: urlId
           in: path
           required: true
           schema:
@@ -793,7 +793,7 @@ paths:
         - bearerAuth: []
         - cookieAuth: []
       parameters:
-        - name: id
+        - name: urlId
           in: path
           required: true
           schema:

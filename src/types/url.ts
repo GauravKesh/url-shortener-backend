@@ -1,5 +1,6 @@
 export interface UrlRow {
   id: number;
+  url_id: string;
   short_code: string;
   original_url: string;
   user_id: number;

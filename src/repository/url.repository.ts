@@ -62,6 +62,16 @@ export const findUrlById = async (id: number): Promise<UrlRow | null> => {
   return rows[0] ?? null;
 };
 
+export const findUrlByUrlId = async (urlId: string): Promise<UrlRow | null> => {
+  const { rows } = await pool.query<UrlRow>(
+    `SELECT * FROM urls
+     WHERE url_id = $1
+       AND deleted_at IS NULL`,
+    [urlId]
+  );
+  return rows[0] ?? null;
+};
+
 /*
   Fetch URL scoped to organization (multi-tenant safety)
 */
@@ -241,7 +251,7 @@ export const getUrls = async ({
   Update URL (only whitelisted fields allowed)
 */
 export const updateUrl = async (
-  id: number,
+  urlId: string,
   updates: Record<string, unknown>
 ): Promise<UrlRow | null> => {
   const safeUpdates = Object.fromEntries(
@@ -259,10 +269,10 @@ export const updateUrl = async (
   const { rows } = await pool.query<UrlRow>(
     `UPDATE urls
      SET ${setQuery}, updated_at = NOW()
-     WHERE id = $${keys.length + 1}
+     WHERE url_id = $${keys.length + 1}
        AND deleted_at IS NULL
      RETURNING *`,
-    [...values, id]
+    [...values, urlId]
   );
 
   return rows[0] ?? null;
@@ -272,16 +282,16 @@ export const updateUrl = async (
   Soft delete URL (organization scoped)
 */
 export const deleteUrl = async (
-  id: number,
+  urlId: string,
   organizationId: number
 ): Promise<boolean> => {
   const { rowCount } = await pool.query(
     `UPDATE urls
      SET deleted_at = NOW()
-     WHERE id = $1
+     WHERE url_id = $1
        AND organization_id = $2
        AND deleted_at IS NULL`,
-    [id, organizationId]
+    [urlId, organizationId]
   );
   return (rowCount ?? 0) > 0;
 };
@@ -290,14 +300,14 @@ export const deleteUrl = async (
   Hard delete URL (permanent removal)
 */
 export const hardDeleteUrl = async (
-  id: number,
+  urlId: string,
   organizationId: number
 ): Promise<boolean> => {
   const { rowCount } = await pool.query(
     `DELETE FROM urls
-     WHERE id = $1
+     WHERE url_id = $1
        AND organization_id = $2`,
-    [id, organizationId]
+    [urlId, organizationId]
   );
   return (rowCount ?? 0) > 0;
 };

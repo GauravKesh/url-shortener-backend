@@ -17,5 +17,10 @@ const sanitizeApiKey = (key: any) => {
   return safe;
 };
 
+const toPublicApiKey = (key: any) => {
+  const { id, key_hash, ...safe } = key;
+  return safe;
+};
 
-export {generateApiKey,hashKey,sanitizeApiKey}
+
+export {generateApiKey,hashKey,sanitizeApiKey,toPublicApiKey}

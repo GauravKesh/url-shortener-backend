@@ -23,13 +23,13 @@ apiKeyRoute.post("/", create);
 apiKeyRoute.get("/", getAll);
 
 // Update API Key
-apiKeyRoute.patch("/:id", update);
+apiKeyRoute.patch("/:apiKeyId", update);
 
 // Revoke API Key
-apiKeyRoute.post("/:id/revoke", revoke);
+apiKeyRoute.post("/:apiKeyId/revoke", revoke);
 
 // Delete API Key
-apiKeyRoute.delete("/:id", deleteApiKey);
+apiKeyRoute.delete("/:apiKeyId", deleteApiKey);
 
 
 export default apiKeyRoute;
