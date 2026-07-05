@@ -40,13 +40,13 @@ The plain 404 handler is simpler and may omit `code`.
 
 These are the main objects the frontend will receive.
 
-- User profile: `public_id`, `email`, `name`, `avatar_url`, `is_active`, `is_verified`, `last_login_at`, `password_changed_at`, `max_sessions`, `created_at`, `updated_at`, `deleted_at`
-- Organization: `public_id`, `name`, `owner_public_id`, `created_at`, `updated_at`
-- URL row: `public_id`, `short_code`, `original_url`, `user_public_id`, `organization_public_id`, `domain_public_id`, `status`, `disabled_reason`, `expires_at`, `clicks`, `created_at`, `updated_at`, `deleted_at`
-- API key row after sanitizing: `public_id`, `organization_public_id`, `name`, `revoked`, `rate_limit_per_min`, `max_links`, `max_expiry_days`, `last_used_at`, `created_at`
-- Subscription: `public_id`, `organization_public_id`, `plan_public_id`, `start_date`, `end_date`, `status`, `created_at`
-- Subscription plan: `public_id`, `name`, `max_links`, `max_api_keys`, `rate_limit_per_min`, `max_expiry_days`, `max_sessions`, `custom_domain_allowed`, `cycle_type`, `created_at`, `updated_at`
-- Usage record: `public_id`, `organization_public_id`, `links_created`, `api_calls`, `period_start`, `period_end`, `created_at`
+- User profile: `user_id`, `email`, `name`, `avatar_url`, `is_active`, `is_verified`, `last_login_at`, `password_changed_at`, `max_sessions`, `created_at`, `updated_at`, `deleted_at`
+- Organization: `organization_id`, `name`, `owner_user_id`, `created_at`, `updated_at`
+- URL row: `url_id`, `short_code`, `original_url`, `user_id`, `organization_id`, `domain_id`, `status`, `disabled_reason`, `expires_at`, `clicks`, `created_at`, `updated_at`, `deleted_at`
+- API key row after sanitizing: `api_key_id`, `organization_id`, `name`, `revoked`, `rate_limit_per_min`, `max_links`, `max_expiry_days`, `last_used_at`, `created_at`
+- Subscription: `subscription_id`, `organization_id`, `plan_id`, `start_date`, `end_date`, `status`, `created_at`
+- Subscription plan: `plan_id`, `name`, `max_links`, `max_api_keys`, `rate_limit_per_min`, `max_expiry_days`, `max_sessions`, `custom_domain_allowed`, `cycle_type`, `created_at`, `updated_at`
+- Usage record: `usage_id`, `organization_id`, `links_created`, `api_calls`, `period_start`, `period_end`, `created_at`
 
 ### Auth APIs
 
@@ -75,15 +75,15 @@ Signup and login also set the `refreshToken` cookie. Login also sets the `access
 | --- | --- | --- | --- | --- |
 | POST | `/org` | Required | `name` | `organization` |
 | GET | `/org/me` | Required | None | `organization` |
-| GET | `/org/:public_id` | Required | None | `organization` |
-| PATCH | `/org/:public_id` | Required | Partial org fields, currently `name` is used | `organization` |
-| DELETE | `/org/:public_id` | Required | None | None |
+| GET | `/org/:organization_id` | Required | None | `organization` |
+| PATCH | `/org/:organization_id` | Required | Partial org fields, currently `name` is used | `organization` |
+| DELETE | `/org/:organization_id` | Required | None | None |
 
 ### Subscription And Usage APIs
 
 | Method | Path | Auth | Request body | Data returned |
 | --- | --- | --- | --- | --- |
-| POST | `/subscription/purchase` | Required | `plan_public_id` | `organization`, `subscription`, `plan` |
+| POST | `/subscription/purchase` | Required | `plan_id` | `organization`, `subscription`, `plan` |
 | GET | `/subscription/current` | Required | None | `subscription` |
 | GET | `/usage/current` | Required | None | `usage` |
 
@@ -95,9 +95,9 @@ Signup and login also set the `refreshToken` cookie. Login also sets the `access
 | --- | --- | --- | --- | --- |
 | POST | `/apikey` | Required | `name?`, `rateLimitPerMin?`, `maxLinks?`, `maxExpiryDays?` | `apiKey`, `data` |
 | GET | `/apikey` | Required | Query params: `limit?`, `offset?` | `items`, `pagination` |
-| PATCH | `/apikey/:public_id` | Required | `name?`, `rate_limit_per_min?`, `max_links?`, `max_expiry_days?` | Sanitized API key row |
-| POST | `/apikey/:public_id/revoke` | Required | None | None |
-| DELETE | `/apikey/:public_id` | Required | None | None |
+| PATCH | `/apikey/:api_key_id` | Required | `name?`, `rate_limit_per_min?`, `max_links?`, `max_expiry_days?` | Sanitized API key row |
+| POST | `/apikey/:api_key_id/revoke` | Required | None | None |
+| DELETE | `/apikey/:api_key_id` | Required | None | None |
 
 Important behavior for API keys:
 
@@ -113,14 +113,14 @@ Important behavior for API keys:
 | POST | `/url/create` | Required | `originalUrl`, `shortCode?`, `domainId?`, `expiresAt?` | Short code string |
 | GET | `/url/user` | Required | Query params: `limit?`, `offset?` | `items`, `pagination` |
 | GET | `/url/org` | Required | Query params: `limit?`, `offset?` | `items`, `pagination` |
-| GET | `/url/:public_id` | Required | None | URL row |
-| PUT | `/url/:public_id` | Required | `original_url?`, `short_code?`, `domain_public_id?`, `expires_at?` | Updated URL row |
-| DELETE | `/url/:public_id` | Required | None | None |
+| GET | `/url/:url_id` | Required | None | URL row |
+| PUT | `/url/:url_id` | Required | `original_url?`, `short_code?`, `domain_id?`, `expires_at?` | Updated URL row |
+| DELETE | `/url/:url_id` | Required | None | None |
 
 Important behavior for URLs:
 
 - Create uses camelCase body fields (`originalUrl`, `shortCode`, `domainId`, `expiresAt`).
-- Update uses snake_case fields (`original_url`, `short_code`, `domain_public_id`, `expires_at`) because the service resolves the domain identifier internally before writing `domain_id`.
+- Update uses snake_case fields (`original_url`, `short_code`, `domain_id`, `expires_at`) because the service resolves the domain identifier internally before writing `domain_id`.
 - `POST /url/create` returns only the generated short code string in `data`, not the full row.
 - `GET /url/user` and `GET /url/org` return `data.items` plus `data.pagination`.
 - `GET /url/r/:shortCode` performs a real redirect and does not return JSON on success.
@@ -157,7 +157,7 @@ Use these shapes when building the frontend forms or AI-generated UI:
   "updateUrl": {
     "original_url": "https://example.com/updated",
     "short_code": "summer-sale-v2",
-    "domain_public_id": "b5b5fd5c-6d35-4f4e-bf7d-44a65b3bc0e4",
+    "domain_id": "b5b5fd5c-6d35-4f4e-bf7d-44a65b3bc0e4",
     "expires_at": "2026-12-31T23:59:59.000Z"
   },
   "createApiKey": {
@@ -167,7 +167,7 @@ Use these shapes when building the frontend forms or AI-generated UI:
     "maxExpiryDays": 30
   },
   "purchaseSubscription": {
-    "planId": 2
+    "plan_id": 2
   },
   "updateProfile": {
     "name": "Gaurav",
