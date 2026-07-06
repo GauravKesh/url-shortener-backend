@@ -40,7 +40,7 @@ const formatConsoleMeta = (info: winston.Logform.TransformableInfo) => {
 const prettyConsoleFormat = printf((info) => {
   const parts: string[] = [];
   const time = info.timestamp ?? new Date().toISOString();
-  const level = info.level.toUpperCase();
+  const level = String(info.level);
   const service = info.service ? `[${info.service}]` : "";
   const logId = info.logId ? `[${info.logId}]` : "";
 
