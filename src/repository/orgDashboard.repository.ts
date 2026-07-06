@@ -1,6 +1,6 @@
 import pool from "../config/database/postgresql.ts";
 
-export const getDashboardCounters = async (orgId: number) => {
+export const getDashboardCounters = async (orgId: string) => {
   const { rows } = await pool.query(
     `
     SELECT 
@@ -14,10 +14,10 @@ export const getDashboardCounters = async (orgId: number) => {
   return rows[0];
 };
 
-export const getTopPerformingLinks = async (orgId: number, limit = 5) => {
+export const getTopPerformingLinks = async (orgId: string, limit = 5) => {
   const { rows } = await pool.query(
     `
-    SELECT urlid, short_code, original_url, clicks, status, created_at
+    SELECT url_id, short_code, original_url, clicks, status, created_at
     FROM urls
     WHERE organization_id = $1 AND deleted_at IS NULL
     ORDER BY clicks DESC, created_at DESC
@@ -28,10 +28,10 @@ export const getTopPerformingLinks = async (orgId: number, limit = 5) => {
   return rows;
 };
 
-export const getRecentLinks = async (orgId: number, limit = 5) => {
+export const getRecentLinks = async (orgId: string, limit = 5) => {
   const { rows } = await pool.query(
     `
-    SELECT urlid, short_code, original_url, clicks, status, created_at
+    SELECT url_id, short_code, original_url, clicks, status, created_at
     FROM urls
     WHERE organization_id = $1 AND deleted_at IS NULL
     ORDER BY created_at DESC
@@ -42,7 +42,7 @@ export const getRecentLinks = async (orgId: number, limit = 5) => {
   return rows;
 };
 
-export const getClickAnalyticsOverTime = async (orgId: number, days = 7) => {
+export const getClickAnalyticsOverTime = async (orgId: string, days = 7) => {
   // Generates a daily series of clicks over the last X days for charts
   const { rows } = await pool.query(
     `

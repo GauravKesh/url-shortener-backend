@@ -17,17 +17,16 @@ export const getDashboardSummary = async (organizationId: string) => {
   }
 
   // Ensure internal numeric IDs are typed as numbers for downstream queries
-  const internalOrgId = Number(org.id);
 
   // 3. Fetch the current plan details to build comparison quota progress bars
   const planDetails = await findPlanByName(org.current_plan || "FREE");
 
   // 4. Fire database calls concurrently using the internal numeric ID for fast index matching
   const [counters, topLinks, recentLinks, chartData] = await Promise.all([
-    dashboardRepo.getDashboardCounters(internalOrgId),
-    dashboardRepo.getTopPerformingLinks(internalOrgId),
-    dashboardRepo.getRecentLinks(internalOrgId),
-    dashboardRepo.getClickAnalyticsOverTime(internalOrgId, 7), // Last 7 days tracking
+    dashboardRepo.getDashboardCounters(organizationId),
+    dashboardRepo.getTopPerformingLinks(organizationId),
+    dashboardRepo.getRecentLinks(organizationId),
+    dashboardRepo.getClickAnalyticsOverTime(organizationId, 7), // Last 7 days tracking
   ]);
 
   const totalLinksCreated = parseInt(counters.total_links, 10);
