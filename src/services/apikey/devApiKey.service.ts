@@ -1,71 +1,101 @@
 import { AppError } from "../../utils/AppError.ts";
-import { generateShortCode } from "../url/generateShortCode.service.ts";
-import { ERRORS } from "../../constants/errors.ts";
+import { ERRORS } from "../../constants/index.ts";
+import redisClient from "../../config/cache/redis.ts";
+
 import { createUrl } from "../../repository/url.repository.ts";
-
-// Import your usage tracker service
-import { increment } from "../usage/usage.service.ts";
-
-// 🌟 Import your API key repository function (Adjust the path if needed)
 import { incrementApiKeyLinkCount } from "../../repository/apiKey.repository.ts";
+import { generateShortCode } from "../url/generateShortCode.service.ts";
+import { increment } from "../usage/usage.service.ts";
+import { enforceLinkCreationLimit } from "../subscription/enforcePlanLimits.ts";
 
-/*
-  Create URL via Developer API Key Proxy
-*/
-export interface CreateUrlViaApiKeyInput {
-    originalUrl: string;
-    shortCode?: string;
-    organizationId: number;
-    apiKeyId: number; //  Added to track which unique token is making the request
-    expiryDays?: number;
+interface CreateUrlViaApiKeyDto {
+  organizationId: number;
+  apiKey: any; // The full API key object from the middleware
+  originalUrl: string;
+  shortCode?: string;
+  expiryDays?: number;
 }
 
 export const createUrlViaApiKeyService = async ({
+  organizationId,
+  apiKey,
+  originalUrl,
+  shortCode,
+  expiryDays
+}: CreateUrlViaApiKeyDto) => {
+  if (!originalUrl) {
+    throw new AppError(ERRORS.BAD_REQUEST, "originalUrl is required.");
+  }
+
+  //  ENFORCE GLOBAL ORG SUBSCRIPTION LIMITS
+  await enforceLinkCreationLimit(organizationId);
+
+  //  ENFORCE API KEY SPECIFIC LIMITS (ANTI-ABUSE)
+  const apiKeyLinksCount = Number(apiKey.links_created || 0);
+  const apiKeyMaxLimit = apiKey.max_links ? Number(apiKey.max_links) : null;
+
+  if (apiKeyMaxLimit && apiKeyLinksCount >= apiKeyMaxLimit) {
+    throw new AppError(ERRORS.API_KEY_LIMIT_REACHED);
+  }
+
+  //  ENFORCE EXPIRY CEILINGS
+  if (apiKey.max_expiry_days && expiryDays && expiryDays > apiKey.max_expiry_days) {
+    throw new AppError(
+      ERRORS.BAD_REQUEST,
+      `Your API tier limits custom links to a maximum of ${apiKey.max_expiry_days} days.`
+    );
+  }
+
+  //  CALCULATE EXPIRATION DATE
+  const daysToAdd = expiryDays || apiKey.max_expiry_days || undefined;
+  let expiresAt = null;
+
+  if (daysToAdd) {
+    expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + Number(daysToAdd));
+  }
+
+  //  GENERATE ALIAS
+  const finalShortCode = shortCode 
+    ? await generateShortCode(shortCode) 
+    : await generateShortCode();
+
+  // 6. DATABASE INSERTION (Create the URL)
+  const url = await createUrl({
+    shortCode: finalShortCode,
     originalUrl,
-    shortCode,
     organizationId,
-    apiKeyId, //  Destructured parameter
-    expiryDays,
-}: CreateUrlViaApiKeyInput) => {
+    userId: null, // API Keys act on behalf of the org, not a specific user
+    domainId: null, // Add domain support here later if needed
+    expiresAt
+  });
 
-    if (!originalUrl) {
-        throw new AppError(ERRORS.BAD_REQUEST);
-    }
+  //  ATOMIC INCREMENTS
+  // We don't await these synchronously to keep the API response ultra-fast.
+  // PostgreSQL handles the atomic `links_created = links_created + 1` safely.
+  Promise.all([
+    incrementApiKeyLinkCount(apiKey.id),
+    increment(organizationId, "links_created"),
+    invalidateDashboardCaches(organizationId)
+  ]).catch(err => console.error(`[DevApiKeyService] Background task failed for Org ${organizationId}:`, err));
 
-    // Process or auto-generate the custom alias/slug
-    if (shortCode) {
-        shortCode = await generateShortCode(shortCode);
-    } else {
-        shortCode = await generateShortCode();
-    }
+  return {
+    shortUrl: url.short_code,
+    originalUrl: url.original_url,
+    expiresAt: url.expires_at,
+  };
+};
 
-    // Calculate expiration timestamp if expiryDays is provided
-    let expiresAt: Date | null = null;
-    if (expiryDays) {
-        expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + expiryDays);
-    }
-
-    // 1. Persist to DB via your existing repository layer
-    const url = await createUrl({
-        shortCode,
-        originalUrl,
-        userId: organizationId,
-        organizationId,
-        expiresAt,
-    });
-
-    //  Increment Telemetry Tracking Metrics concurrently
-    // (We do this after successful DB creation so we don't overcount failed requests)
-    await Promise.all([
-        increment(organizationId, "api_calls"),     // Org Monthly Metric
-        increment(organizationId, "links_created"),  // Org Monthly Metric
-        incrementApiKeyLinkCount(apiKeyId)           // Key-specific Cumulative Counter
-    ]);
-
-    return {
-        shortUrl: url.short_code,
-        originalUrl: url.original_url,
-        expiresAt: url.expires_at,
-    };
+// --- HELPER: Invalidate Dashboard Caches ---
+// Ensures that when a developer creates a link via API, the frontend dashboard updates immediately.
+const invalidateDashboardCaches = async (organizationId: number) => {
+  try {
+    await redisClient.del(`dashboard:recent:org:${organizationId}`);
+    await redisClient.del(`dashboard:org:${organizationId}`);
+    
+    // Note: We don't necessarily clear 'dashboard:top:org' here because 
+    // a newly created link has 0 clicks and won't affect the "Top" list yet.
+  } catch (error) {
+    console.error(`Failed to invalidate dashboard caches for Org ${organizationId}`, error);
+  }
 };

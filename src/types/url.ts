@@ -16,7 +16,7 @@ export interface UrlRow {
 export interface CreateUrlData {
   shortCode: string;
   originalUrl: string;
-  userId: number;
+  userId: number | null;
   organizationId: number;
   domainId?: number | null;
   expiresAt?: Date | null | string;
