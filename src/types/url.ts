@@ -19,7 +19,7 @@ export interface CreateUrlData {
   userId: number;
   organizationId: number;
   domainId?: number | null;
-  expiresAt?: Date | null;
+  expiresAt?: Date | null | string;
 }
 
 export interface GetUrlsOptions {

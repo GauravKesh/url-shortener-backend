@@ -14,10 +14,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node.js 20
+      # Updated to Node 24 to resolve the deprecation warning
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
 
       - name: Install dependencies
@@ -26,10 +27,11 @@ jobs:
       - name: Lint
         run: npm run lint --if-present
 
-      # Checks for build errors (e.g., TypeScript compilation, Next.js build)
       - name: Build
         run: npm run build
 
-      # Scans for exposed credentials and secrets
+      # Fixed: Added the required GITHUB_TOKEN environment variable
       - name: Secret scan (Gitleaks)
         uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

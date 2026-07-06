@@ -1,4 +1,3 @@
-
 import {
     createUrl,
     getUrlsByUser,
@@ -24,6 +23,35 @@ import { findDomainByDomainId } from "../../repository/domain.repository.ts";
 
 const CACHE_TTL = 60 * 5;
 
+// --- Interfaces for Type Safety ---
+
+interface CreateUrlDto {
+    originalUrl: string;
+    shortCode?: string;
+    userId: number;
+    organizationId: number;
+    domainId?: string | number;
+    expiresAt?: Date | string|null;
+}
+
+interface CreateUrlPublicDto {
+    originalUrl: string;
+    shortCode?: string;
+}
+
+interface UserAuthPayload {
+    userId: number;
+    tenantId: number;
+}
+
+interface UpdateUrlDto {
+    domainId?: string | number | null;
+    domain_id?: number | null;
+    [key: string]: any; // Allows other fields to be updated
+}
+
+// --- Services ---
+
 /*
   Create URL (handles alias logic)
 */
@@ -34,7 +62,7 @@ export const createUrlService = async ({
     organizationId,
     domainId,
     expiresAt,
-}: any) => {
+}: CreateUrlDto) => {
 
     await enforceLinkCreationLimit(organizationId);
 
@@ -42,12 +70,15 @@ export const createUrlService = async ({
         throw new AppError(ERRORS.BAD_REQUEST);
     }
 
-    const resolvedDomainId = domainId
-        ? Number((await findDomainByDomainId(domainId, organizationId))?.id)
-        : null;
+    let resolvedDomainId = null;
 
-    if (domainId && !resolvedDomainId) {
-        throw new AppError(ERRORS.NOT_FOUND);
+    // Cleaner and safer domain resolution
+    if (domainId) {
+        const domain = await findDomainByDomainId(String(domainId), organizationId);
+        if (!domain) {
+            throw new AppError(ERRORS.NOT_FOUND);
+        }
+        resolvedDomainId = Number(domain.id);
     }
 
     if (shortCode) {
@@ -75,7 +106,7 @@ export const createUrlService = async ({
 export const createUrlServicePublic = async ({
     originalUrl,
     shortCode,
-}: any) => {
+}: CreateUrlPublicDto) => {
 
     if (!originalUrl) {
         throw new AppError(ERRORS.BAD_REQUEST);
@@ -90,7 +121,7 @@ export const createUrlServicePublic = async ({
     const url = await createUrl({
         shortCode,
         originalUrl,
-        userId: 1,
+        userId: 1, // Defaulting to public/system user
         organizationId: 1,
     });
 
@@ -126,7 +157,7 @@ export const getOrgUrlsService = async (orgId: number, limit: number, offset: nu
 /*
   Get one URL (with cache + auth check)
 */
-export const getOneUrlService = async (urlId: string, user: any) => {
+export const getOneUrlService = async (urlId: string, user:any) => {
     const cacheKey = `url:urlId:${urlId}`;
 
     const cached = await redisClient.get(cacheKey);
@@ -136,8 +167,8 @@ export const getOneUrlService = async (urlId: string, user: any) => {
     if (!url) throw new AppError(ERRORS.URL_NOT_FOUND);
 
     if (
-        url.user_id !== user.userId &&
-        url.organization_id !== user.tenantId
+        Number(url.user_id) !== user.userId &&
+        Number(url.organization_id) !== user.tenantId
     ) {
         throw new AppError(ERRORS.FORBIDDEN);
     }
@@ -150,11 +181,13 @@ export const getOneUrlService = async (urlId: string, user: any) => {
 /*
   Update URL
 */
-export const updateUrlService = async (urlId: string, user: any, updates: any) => {
+export const updateUrlService = async (urlId: string, user:any, updates: UpdateUrlDto) => {
     const existing = await findUrlByUrlId(urlId);
     if (!existing) throw new AppError(ERRORS.URL_NOT_FOUND);
+    
     const existingUserId = Number(existing.user_id);
     const existingOrgId = Number(existing.organization_id);
+    
     if (
         existingUserId !== user.userId &&
         existingOrgId !== user.tenantId
@@ -180,12 +213,13 @@ export const updateUrlService = async (urlId: string, user: any, updates: any) =
         normalizedUpdates.domain_id = Number(domain.id);
         delete normalizedUpdates.domainId;
     }
-    }
 
     const updated = await updateUrl(urlId, normalizedUpdates);
     if (!updated) throw new AppError(ERRORS.BAD_REQUEST);
 
+    // Invalidate BOTH caches to prevent stale redirects
     await redisClient.del(`url:urlId:${urlId}`);
+    await redisClient.del(`url:code:${existing.short_code}`);
 
     return updated;
 };
@@ -194,10 +228,16 @@ export const updateUrlService = async (urlId: string, user: any, updates: any) =
   Delete URL
 */
 export const deleteUrlService = async (urlId: string, orgId: number) => {
+    // Fetch the URL first to get the short_code for cache invalidation
+    const existing = await findUrlByUrlId(urlId);
+    if (!existing) throw new AppError(ERRORS.URL_NOT_FOUND);
+
     const success = await deleteUrl(urlId, orgId);
     if (!success) throw new AppError(ERRORS.URL_NOT_FOUND);
 
+    // Invalidate BOTH caches
     await redisClient.del(`url:urlId:${urlId}`);
+    await redisClient.del(`url:code:${existing.short_code}`);
 };
 
 /*
@@ -209,7 +249,8 @@ export const redirectService = async (shortCode: string) => {
     const cached = await redisClient.get(cacheKey);
     if (cached) {
         const url = JSON.parse(cached);
-        incrementClicks(url.id);
+        // Fire and forget, but catch potential errors
+        incrementClicks(url.id).catch(err => console.error(`Failed to increment clicks for cached URL ${url.id}:`, err));
         return url;
     }
 
@@ -222,7 +263,8 @@ export const redirectService = async (shortCode: string) => {
 
     await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(url));
 
-    incrementClicks(url.id);
+    // Fire and forget, but catch potential errors
+    incrementClicks(url.id).catch(err => console.error(`Failed to increment clicks for URL ${url.id}:`, err));
 
     return url;
 };
