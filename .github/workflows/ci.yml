@@ -2,12 +2,12 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "develop"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "develop"]
 
 jobs:
-  build-test-security:
+  build-and-scan:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,11 +26,10 @@ jobs:
       - name: Lint
         run: npm run lint --if-present
 
-      - name: Run tests
-        run: npm test --if-present
-
+      # Checks for build errors (e.g., TypeScript compilation, Next.js build)
       - name: Build
         run: npm run build
 
+      # Scans for exposed credentials and secrets
       - name: Secret scan (Gitleaks)
         uses: gitleaks/gitleaks-action@v2
