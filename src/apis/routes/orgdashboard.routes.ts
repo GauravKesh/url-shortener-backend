@@ -8,6 +8,6 @@ const orgDashboardRouter = Router();
 orgDashboardRouter.use(authenticate);
 
 /* Fetch consolidated metrics dataset */
-orgDashboardRouter.get("/summary/:orgPublicId", orgDashboardController.getSummary);
+orgDashboardRouter.get("/summary/:organizationId", orgDashboardController.getSummary);
 
 export default orgDashboardRouter;

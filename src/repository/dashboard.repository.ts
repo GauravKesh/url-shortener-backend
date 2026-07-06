@@ -43,7 +43,7 @@ export const getRecentUrls = async (
   const { rows } = await pool.query(
     `
     SELECT
-      id,
+      url_id,
       short_code,
       original_url,
       clicks,
@@ -67,7 +67,7 @@ export const getTopUrls = async (
   const { rows } = await pool.query(
     `
     SELECT
-      id,
+      url_id,
       short_code,
       original_url,
       clicks,

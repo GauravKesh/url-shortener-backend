@@ -80,7 +80,7 @@ export const update = async (req: Request, res: Response, next: NextFunction) =>
         const orgId = await getOrgIdForUser(req.user?.userId);
 
         const updated = await updateApiKeyService(
-            Number(req.params.id),
+            String(req.params.apiKeyId),
             orgId,
             req.body
         );
@@ -102,7 +102,7 @@ export const revoke = async (req: Request, res: Response, next: NextFunction) =>
     try {
         const orgId = await getOrgIdForUser(req.user?.userId);
 
-        await revokeApiKeyService(Number(req.params.id), orgId);
+        await revokeApiKeyService(String(req.params.apiKeyId), orgId);
 
         return httpResponse(
             req,
@@ -120,7 +120,7 @@ export const deleteApiKey = async (req: Request, res: Response, next: NextFuncti
     try {
         const orgId = await getOrgIdForUser(req.user?.userId);
 
-        await deleteApiKeyService(Number(req.params.id), orgId);
+        await deleteApiKeyService(String(req.params.apiKeyId), orgId);
 
         return httpResponse(
             req,

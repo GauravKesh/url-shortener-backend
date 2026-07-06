@@ -25,7 +25,7 @@ export default {
   ) => {
     try {
       const userId = req.user?.userId;
-      const organizationId = req.user?.tenantId;
+      const organizationId = req.user?.organizationId;
       //console.log({userId,organizationId});
 
       if (!userId || !organizationId) {

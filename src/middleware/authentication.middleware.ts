@@ -30,6 +30,7 @@ export const authenticate = (
       userId: Number(decoded.userId),
       role: decoded.role,
       tenantId: Number(decoded.organizationId),
+      organizationId: Number(decoded.organizationId),
     };
 
     return next();

@@ -46,7 +46,7 @@ export default {
 
       const data = await subscriptionService.purchasePlan(
         userId,
-        Number(planId)
+        String(planId)
       );
 
       return httpResponse(

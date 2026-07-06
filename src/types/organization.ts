@@ -29,7 +29,7 @@ export interface OrganizationCustomLimits {
 
 export interface Organization {
   id: string | number;
-  public_id: string;
+  organization_id: string;
 
   name: string;
   display_name?: string;
