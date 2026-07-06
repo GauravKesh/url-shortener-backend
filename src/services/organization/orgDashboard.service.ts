@@ -5,37 +5,37 @@ import { AppError } from "../../utils/AppError.ts";
 import { ERRORS } from "../../constants/index.ts";
 
 export const getDashboardSummary = async (organizationId: string) => {
-  // 1. Ensure organizationid parameter exists
   if (!organizationId) {
     throw new AppError(ERRORS.BAD_REQUEST);
   }
 
-  // 2. Resolve organization context by its public UUID/String identifier
+  // 1. Resolve organization context by its public UUID
   const org = await findOrgByOrganizationId(organizationId);
   if (!org) {
     throw new AppError(ERRORS.ORGANIZATION_NOT_FOUND);
   }
 
-  // Ensure internal numeric IDs are typed as numbers for downstream queries
+  // 2. Extract the internal database ID (bigint) for the queries
+  const internalOrgId = Number(org.id); 
 
-  // 3. Fetch the current plan details to build comparison quota progress bars
+  // Fetch the current plan details to build comparison quota progress bars
   const planDetails = await findPlanByName(org.current_plan || "FREE");
 
-  // 4. Fire database calls concurrently using the internal numeric ID for fast index matching
+  // 3. Fire database calls using the INTERNAL NUMERIC ID
   const [counters, topLinks, recentLinks, chartData] = await Promise.all([
-    dashboardRepo.getDashboardCounters(organizationId),
-    dashboardRepo.getTopPerformingLinks(organizationId),
-    dashboardRepo.getRecentLinks(organizationId),
-    dashboardRepo.getClickAnalyticsOverTime(organizationId, 7), // Last 7 days tracking
+    dashboardRepo.getDashboardCounters(internalOrgId),
+    dashboardRepo.getTopPerformingLinks(internalOrgId),
+    dashboardRepo.getRecentLinks(internalOrgId),
+    dashboardRepo.getClickAnalyticsOverTime(internalOrgId, 7), 
   ]);
 
-  const totalLinksCreated = parseInt(counters.total_links, 10);
-  const totalClicksAccumulated = parseInt(counters.total_clicks, 10);
+  const totalLinksCreated = parseInt(counters.total_links || "0", 10);
+  const totalClicksAccumulated = parseInt(counters.total_clicks || "0", 10);
+  const maxLinksLimit = planDetails?.max_links || 100;
 
-  // 5. Structural map for frontend visualization
   return {
     organization: {
-      organizationId: org.organization_id,
+      organizationId: org.organization_id, // Send the UUID back to the frontend
       name: org.name,
       current_plan: org.current_plan,
     },
@@ -46,9 +46,9 @@ export const getDashboardSummary = async (organizationId: string) => {
     quotas: {
       links: {
         used: totalLinksCreated,
-        limit: planDetails?.max_links || 100,
+        limit: maxLinksLimit,
         percentage_used: Math.min(
-          Math.round((totalLinksCreated / (planDetails?.max_links || 100)) * 100),
+          Math.round((totalLinksCreated / maxLinksLimit) * 100),
           100
         ),
       },
