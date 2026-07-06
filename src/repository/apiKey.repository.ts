@@ -47,6 +47,20 @@ export const findApiKeyByHash = async (keyHash: string) => {
 };
 
 
+export const findApiKeyByApiKeyId = async (
+  apiKeyId: string,
+  organizationId: number
+) => {
+  const { rows } = await pool.query(
+    `SELECT * FROM api_keys 
+     WHERE api_key_id = $1 AND organization_id = $2`,
+    [apiKeyId, organizationId]
+  );
+
+  return rows[0];
+};
+
+
 // GET ALL KEYS FOR ORG
 export const getApiKeysByOrg = async (
   orgId: number,
@@ -91,6 +105,31 @@ export const updateApiKey = async (
 };
 
 
+export const updateApiKeyByApiKeyId = async (
+  apiKeyId: string,
+  organizationId: number,
+  updates: any
+) => {
+  const keys = Object.keys(updates);
+  const values = Object.values(updates);
+
+  if (!keys.length) return null;
+
+  const query = keys.map((k, i) => `${k} = $${i + 1}`).join(", ");
+
+  const { rows } = await pool.query(
+    `UPDATE api_keys 
+     SET ${query} 
+     WHERE api_key_id = $${keys.length + 1}
+     AND organization_id = $${keys.length + 2}
+     RETURNING *`,
+    [...values, apiKeyId, organizationId]
+  );
+
+  return rows[0];
+};
+
+
 // REVOKE API KEY
 export const revokeApiKey = async (
   id: number,
@@ -107,6 +146,21 @@ export const revokeApiKey = async (
 };
 
 
+export const revokeApiKeyByApiKeyId = async (
+  apiKeyId: string,
+  organizationId: number
+) => {
+  const { rowCount } = await pool.query(
+    `UPDATE api_keys 
+     SET revoked = true 
+     WHERE api_key_id = $1 AND organization_id = $2`,
+    [apiKeyId, organizationId]
+  );
+
+  return rowCount;
+};
+
+
 // DELETE API KEY (optional hard delete)
 export const deleteApiKey = async (
   id: number,
@@ -116,6 +170,20 @@ export const deleteApiKey = async (
     `DELETE FROM api_keys 
      WHERE id = $1 AND organization_id = $2`,
     [id, organizationId]
+  );
+
+  return rowCount;
+};
+
+
+export const deleteApiKeyByApiKeyId = async (
+  apiKeyId: string,
+  organizationId: number
+) => {
+  const { rowCount } = await pool.query(
+    `DELETE FROM api_keys 
+     WHERE api_key_id = $1 AND organization_id = $2`,
+    [apiKeyId, organizationId]
   );
 
   return rowCount;

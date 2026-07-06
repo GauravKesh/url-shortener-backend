@@ -15,6 +15,18 @@ export const findAllPlans = async () => {
 };
 
 /**
+ * Find a single subscription plan by its public identifier.
+ */
+export const findPlanByPlanId = async (planId: string) => {
+  const { rows } = await pool.query(
+    "SELECT * FROM subscription_plans WHERE plan_id = $1",
+    [planId]
+  );
+
+  return rows[0] ?? null;
+};
+
+/**
  * Find a single subscription plan by its numeric ID
  */
 export const findPlanById = async (id: number) => {

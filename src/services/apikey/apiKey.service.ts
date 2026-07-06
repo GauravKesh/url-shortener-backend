@@ -7,12 +7,12 @@ import {
   createApiKey,
   findApiKeyByHash,
   getApiKeysByOrg,
-  updateApiKey,
-  revokeApiKey,
-  deleteApiKey,
+  updateApiKeyByApiKeyId,
+  revokeApiKeyByApiKeyId,
+  deleteApiKeyByApiKeyId,
   updateLastUsed
 } from "../../repository/apiKey.repository.ts";
-import { generateApiKey, hashKey, sanitizeApiKey } from "../../utils/apiKeyHashGeneration.ts";
+import { generateApiKey, hashKey, sanitizeApiKey, toPublicApiKey } from "../../utils/apiKeyHashGeneration.ts";
 
 // CREATE API KEY
 
@@ -42,7 +42,7 @@ export const createApiKeyService = async ({
 
   return {
     apiKey: rawKey, // only shown once
-    data: sanitizeApiKey(apiKey)
+    data: toPublicApiKey(apiKey)
   };
 };
 
@@ -88,7 +88,7 @@ export const getApiKeysService = async (
     offset
   );
 
-  return keys.map(sanitizeApiKey);
+  return keys.map(toPublicApiKey);
 };
 
 
@@ -96,7 +96,7 @@ export const getApiKeysService = async (
 // UPDATE API KEY
 
 export const updateApiKeyService = async (
-  id: number,
+  apiKeyId: string,
   organizationId:number,
   updates: {
     name?: string;
@@ -124,23 +124,23 @@ export const updateApiKeyService = async (
     throw new AppError(ERRORS.BAD_REQUEST);
   }
 
-  const updated = await updateApiKey(id,organizationId,safeUpdates);
+  const updated = await updateApiKeyByApiKeyId(apiKeyId,organizationId,safeUpdates);
 
-  return sanitizeApiKey(updated);
+  return toPublicApiKey(updated);
 };
 
 
 
 // REVOKE API KEY
 
-export const revokeApiKeyService = async (id: number,organizationId:number) => {
-  await revokeApiKey(id,organizationId);
+export const revokeApiKeyService = async (apiKeyId: string,organizationId:number) => {
+  await revokeApiKeyByApiKeyId(apiKeyId,organizationId);
 };
 
 
 
 // DELETE API KEY
 
-export const deleteApiKeyService = async (id: number,organizationId:number) => {
-  await deleteApiKey(id,organizationId);
+export const deleteApiKeyService = async (apiKeyId: string,organizationId:number) => {
+  await deleteApiKeyByApiKeyId(apiKeyId,organizationId);
 };

@@ -43,17 +43,17 @@ urlRoutes.get("/org", getOrgUrls);
 /*
   Get single URL
 */
-urlRoutes.get("/:id", getOne);
+urlRoutes.get("/:urlId", getOne);
 
 /*
   Update URL
 */
-urlRoutes.put("/:id", update);
+urlRoutes.put("/:urlId", update);
 
 /*
   Delete URL (soft delete)
 */
-urlRoutes.delete("/:id", deleteUrl);
+urlRoutes.delete("/:urlId", deleteUrl);
 
 
 

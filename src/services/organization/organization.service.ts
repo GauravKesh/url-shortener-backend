@@ -3,26 +3,22 @@ import { ERRORS } from "../../constants/index.ts";
 
 import {
     createOrganization,
-    findOrgByPublicId,
+  findOrgByOrganizationId,
     findOrgByUser,
     updateOrganization,
     deleteOrganization,
     getOrganizationCurrentPlan
 } from "../../repository/organization.repository.ts";
 
-/* get org by public_id */
+/* get org by organizationid */
 export const getOrganizationById = async (publicId: string) => {
-    const org = await findOrgByPublicId(publicId);
+  const org = await findOrgByOrganizationId(publicId);
 
     if (!org) {
         throw new AppError(ERRORS.NOT_FOUND);
     }
 
-    return {
-    ...org,
-    id: Number(org.id),
-    owner_id: Number(org.owner_id),
-  };
+    return org;
 };
 
 /* get org of current user */
@@ -55,11 +51,11 @@ export const createOrg = async (
 /* update org (only owner allowed) */
 export const updateOrg = async (
     userId: number,
-    publicId: string,
+  organizationId: string,
     updates: { name?: string }
 ) => {
 
-    const org = await findOrgByPublicId(publicId);
+  const org = await findOrgByOrganizationId(organizationId);
 
     // //console.log(org);
     if (!org) {
@@ -69,7 +65,7 @@ export const updateOrg = async (
         throw new AppError(ERRORS.FORBIDDEN);
     }
 
-    const updated = await updateOrganization(publicId, updates);
+    const updated = await updateOrganization(organizationId, updates);
     //console.log(updated);
 
     return updated;
@@ -78,9 +74,9 @@ export const updateOrg = async (
 /* delete org */
 export const removeOrg = async (
     userId: number,
-    publicId: string
+  organizationId: string
 ) => {
-    const org = await findOrgByPublicId(publicId);
+  const org = await findOrgByOrganizationId(organizationId);
 
     if (!org) {
         throw new AppError(ERRORS.NOT_FOUND);
@@ -90,7 +86,7 @@ export const removeOrg = async (
         throw new AppError(ERRORS.FORBIDDEN);
     }
 
-    await deleteOrganization(publicId);
+    await deleteOrganization(organizationId);
 
     return true;
 };

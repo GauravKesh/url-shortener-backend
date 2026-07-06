@@ -60,12 +60,12 @@ export default {
         }
     },
 
-    /* get org by public_id */
+    /* get org by organizationId */
     getOne: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const publicId = req.params.id;
+            const organizationId = req.params.organizationId;
 
-            const org = await orgService.getOrganizationById(publicId);
+            const org = await orgService.getOrganizationById(organizationId);
 
             return httpResponse(
                 req,
@@ -84,11 +84,11 @@ export default {
         try {
             const userId = req.user?.userId;
             
-            const publicId = req.params.id;
+            const organizationId = req.params.organizationId;
 
             if (!userId) throw new AppError(ERRORS.FORBIDDEN);
 
-            const org = await orgService.updateOrg(userId, publicId, req.body);
+            const org = await orgService.updateOrg(userId, organizationId, req.body);
 
             return httpResponse(
                 req,
@@ -108,11 +108,11 @@ export default {
         try {
             const userId = req.user?.userId;
             
-            const publicId = req.params.id;
+            const organizationId = req.params.organizationId;
 
             if (!userId) throw new AppError(ERRORS.FORBIDDEN);
 
-            await orgService.removeOrg(userId, publicId);
+            await orgService.removeOrg(userId, organizationId);
 
             return httpResponse(
                 req,

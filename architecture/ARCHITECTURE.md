@@ -2,7 +2,7 @@
 │       USERS         │
 ├─────────────────────┤
 │ id (PK)             │
-│ public_id (UUID)    │
+│ user_id (UUID)      │
 │ email               │
 │ password_hash       │
 │ role                │
@@ -16,7 +16,7 @@
 │   ORGANIZATIONS     │
 ├─────────────────────┤
 │ id (PK)             │
-│ public_id           │
+│ organization_id     │
 │ name                │
 │ owner_id (FK)       │
 └──────┬──────┬───────┘
@@ -55,7 +55,7 @@
 │       URLS          │
 ├─────────────────────┤
 │ id (PK)             │
-│ public_id           │
+│ url_id              │
 │ short_code          │
 │ original_url        │
 │ user_id FK          │
@@ -122,4 +122,4 @@
           │
 ┌─────────┴───────────┐
 │   ORGANIZATIONS     │
-└─────────────────────┘console.log();
+└─────────────────────┘

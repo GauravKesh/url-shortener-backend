@@ -1,5 +1,6 @@
 export interface UrlRow {
   id: number;
+  url_id: string;
   short_code: string;
   original_url: string;
   user_id: number;
@@ -18,7 +19,7 @@ export interface CreateUrlData {
   userId: number;
   organizationId: number;
   domainId?: number | null;
-  expiresAt?: Date | null;
+  expiresAt?: Date | null | string;
 }
 
 export interface GetUrlsOptions {
