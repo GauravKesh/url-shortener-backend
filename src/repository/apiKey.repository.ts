@@ -150,14 +150,15 @@ export const revokeApiKeyByApiKeyId = async (
   apiKeyId: string,
   organizationId: number
 ) => {
-  const { rowCount } = await pool.query(
+  const { rows } = await pool.query(
     `UPDATE api_keys 
      SET revoked = true 
-     WHERE api_key_id = $1 AND organization_id = $2`,
+     WHERE api_key_id = $1 AND organization_id = $2
+     RETURNING *`,
     [apiKeyId, organizationId]
   );
 
-  return rowCount;
+  return rows[0];
 };
 
 
@@ -180,13 +181,14 @@ export const deleteApiKeyByApiKeyId = async (
   apiKeyId: string,
   organizationId: number
 ) => {
-  const { rowCount } = await pool.query(
+  const { rows } = await pool.query(
     `DELETE FROM api_keys 
-     WHERE api_key_id = $1 AND organization_id = $2`,
+     WHERE api_key_id = $1 AND organization_id = $2
+     RETURNING *`,
     [apiKeyId, organizationId]
   );
 
-  return rowCount;
+  return rows[0]; // <--- RETURN THE ROW, NOT rowCount
 };
 
 

@@ -1,5 +1,3 @@
-// subscription.service.ts
-
 import {
   createSubscription,
   getActiveSubscription,
@@ -20,9 +18,26 @@ import {
 
 import { AppError } from "../../utils/AppError.ts";
 import { ERRORS } from "../../constants/index.ts";
+import redisClient from "../../config/cache/redis.ts";
+
+const CACHE_TTL_PLANS = 60 * 60 * 24; // 24 hours for static plan catalogs
+const CACHE_TTL_ACTIVE_SUB = 60 * 5; // 5 minutes for active organization subscriptions
 
 export const getAllPlans = async () => {
-  return await findAllPlans();
+  const cacheKey = "subscription:plans:all";
+
+  //  Check Cache
+  const cached = await redisClient.get(cacheKey);
+  if (cached) return JSON.parse(cached);
+
+  //  Fetch from DB
+  const plans = await findAllPlans();
+
+  //  Save to Cache
+  redisClient.setEx(cacheKey, CACHE_TTL_PLANS, JSON.stringify(plans))
+    .catch(err => console.error("Failed to cache all plans:", err));
+
+  return plans;
 };
 
 // Purchase or upgrade a subscription plan
@@ -59,6 +74,10 @@ export const purchasePlan = async (
     endDate
   );
 
+  // INVALIDATE CACHE: Ensure the user gets their new limits immediately
+  await redisClient.del(`subscription:org:${org.id}:active`)
+    .catch(err => console.error(`Failed to invalidate subscription cache for org ${org.id}:`, err));
+
   return {
     organization: org,
     subscription,
@@ -69,11 +88,23 @@ export const purchasePlan = async (
 // Get currently active subscription for an organization
 export const getCurrentPlan = async (orgId: number) => {
   try {
+    const cacheKey = `subscription:org:${orgId}:active`;
+
+    // Check Cache
+    const cached = await redisClient.get(cacheKey);
+    if (cached) return JSON.parse(cached);
+
+    //  Fetch from DB
     const subscription = await getActiveSubscription(orgId);
-    //console.log("sucbscriptim daya",subscription);
     
     // Normalize return value to null if no record is found in the database
-    return subscription ?? null;
+    const result = subscription ?? null;
+
+    //  Save to Cache (including nulls to prevent DB hammering on orgs without subs)
+    redisClient.setEx(cacheKey, CACHE_TTL_ACTIVE_SUB, JSON.stringify(result))
+      .catch(err => console.error(`Failed to cache active subscription for org ${orgId}:`, err));
+
+    return result;
   } catch (err) {
     // Intercept database failure and cast to an operational AppError
     throw new AppError({

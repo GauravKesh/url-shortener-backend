@@ -1,5 +1,6 @@
 import { AppError } from "../../utils/AppError.ts";
 import { ERRORS } from "../../constants/index.ts";
+import redisClient from "../../config/cache/redis.ts";
 
 import {
   findUserById,
@@ -17,31 +18,72 @@ import type {
   IChangePasswordInput
 } from "../../types/user.ts";
 
+const CACHE_TTL = 60 * 15;
+
 /* remove sensitive fields */
 const sanitizeUser = (user: IUser): IUserSafe => {
   const { password_hash, ...safeUser } = user;
   return safeUser;
 };
 
-export const getUserById = async (userId: number): Promise<IUserSafe> => {
-  const user = await findUserById(userId);
+/* helper to invalidate user caches to prevent stale data */
+const invalidateUserCache = async (user: IUser | IUserSafe) => {
+  try {
+    if (user.id) await redisClient.del(`user:id:${user.id}`);
+    if (user.email) await redisClient.del(`user:email:${user.email}`);
+  } catch (err) {
+    console.error(`Failed to invalidate cache for user ${user.id}:`, err);
+  }
+};
 
+export const getUserById = async (userId: number): Promise<IUserSafe> => {
+  const cacheKey = `user:id:${userId}`;
+
+  // Check Cache
+  const cached = await redisClient.get(cacheKey);
+  if (cached) {
+    return JSON.parse(cached);
+  }
+
+  // Fetch from DB
+  const user = await findUserById(userId);
   if (!user) {
     throw new AppError(ERRORS.USER_NOT_FOUND);
   }
 
-  return await sanitizeUser(user);
+  const safeUser = sanitizeUser(user);
+
+  // Cache the sanitized user
+  redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(safeUser))
+    .catch(err => console.error(`Failed to cache user ${userId}:`, err));
+
+  return safeUser;
 };
 
 export const getUserByEmail = async (
   email: string
 ): Promise<IUserSafe> => {
-  const user = await findUserByEmail(email);
+  const cacheKey = `user:email:${email}`;
 
+  // Check Cache
+  const cached = await redisClient.get(cacheKey);
+  if (cached) {
+    return JSON.parse(cached);
+  }
+
+  //  Fetch from DB
+  const user = await findUserByEmail(email);
   if (!user) {
     throw new AppError(ERRORS.USER_NOT_FOUND);
   }
-  return sanitizeUser(user);
+
+  const safeUser = sanitizeUser(user);
+
+  // Cache the sanitized user
+  redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(safeUser))
+    .catch(err => console.error(`Failed to cache user email ${email}:`, err));
+
+  return safeUser;
 };
 
 export const updateProfile = async (
@@ -55,8 +97,13 @@ export const updateProfile = async (
   }
 
   const updated = await updateUser(userId, updates);
+  const safeUser = sanitizeUser(updated);
 
-  return sanitizeUser(updated);
+  // Invalidate BOTH the old email (if it changed) and the new data
+  await invalidateUserCache(user);
+  await invalidateUserCache(safeUser);
+
+  return safeUser;
 };
 
 export const changePassword = async ({
@@ -86,6 +133,9 @@ export const changePassword = async ({
     password_changed_at: new Date()
   });
 
+  // Invalidate cache since password_changed_at likely updated on the profile
+  await invalidateUserCache(user);
+
   return true;
 };
 
@@ -99,6 +149,9 @@ export const removeUser = async (
   }
 
   await deleteUser(userId);
+
+  // Clear cache to prevent retrieving deleted user
+  await invalidateUserCache(user);
 
   return true;
 };

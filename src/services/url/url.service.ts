@@ -52,6 +52,20 @@ interface UpdateUrlDto {
 
 // --- Services ---
 
+const invalidateDashboardCaches = async (organizationId: number, userId?: number) => {
+    try {
+        await redisClient.del(`dashboard:recent:org:${organizationId}`);
+        await redisClient.del(`dashboard:top:org:${organizationId}`);
+        if (userId) {
+            await redisClient.del(`dashboard:summary:org:${organizationId}:user:${userId}`);
+        }
+        // Invalidate the generic org dashboard we made earlier too
+        await redisClient.del(`dashboard:org:${organizationId}`);
+    } catch (error) {
+        console.error("Failed to invalidate dashboard caches", error);
+    }
+};
+
 /*
   Create URL (handles alias logic)
 */
@@ -97,6 +111,8 @@ export const createUrlService = async ({
     });
 
     await increment(organizationId, "links_created");
+
+    await invalidateDashboardCaches(organizationId, userId);
 
     return {
         shortUrl: url.short_code,
@@ -235,6 +251,8 @@ export const deleteUrlService = async (urlId: string, orgId: number) => {
     const success = await deleteUrl(urlId, orgId);
     if (!success) throw new AppError(ERRORS.URL_NOT_FOUND);
 
+    await invalidateDashboardCaches(orgId);
+
     // Invalidate BOTH caches
     await redisClient.del(`url:urlId:${urlId}`);
     await redisClient.del(`url:code:${existing.short_code}`);
@@ -249,7 +267,12 @@ export const redirectService = async (shortCode: string) => {
     const cached = await redisClient.get(cacheKey);
     if (cached) {
         const url = JSON.parse(cached);
-        // Fire and forget, but catch potential errors
+        
+        //  Check expiration even if it's cached!
+        if (url.expires_at && new Date(url.expires_at) < new Date()) {
+            throw new AppError(ERRORS.URL_EXPIRED);
+        }
+
         incrementClicks(url.id).catch(err => console.error(`Failed to increment clicks for cached URL ${url.id}:`, err));
         return url;
     }
@@ -262,8 +285,6 @@ export const redirectService = async (shortCode: string) => {
     }
 
     await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(url));
-
-    // Fire and forget, but catch potential errors
     incrementClicks(url.id).catch(err => console.error(`Failed to increment clicks for URL ${url.id}:`, err));
 
     return url;

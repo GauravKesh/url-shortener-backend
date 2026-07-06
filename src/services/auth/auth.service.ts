@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 
 import { AppError } from "../../utils/AppError.ts";
 import { ERRORS } from "../../constants/index.ts";
+import redisClient from "../../config/cache/redis.ts"; // <-- Import Redis
 
 import {
   findUserByEmail,
@@ -30,18 +31,16 @@ import { createSubscription } from "../../repository/subscription.repository.ts"
 const hashToken = (token: string) =>
   crypto.createHash("sha256").update(token).digest("hex");
 
+const CACHE_TTL_ORG = 60 * 60; // 1 hour for org lookup
+const CACHE_TTL_SESSION = 60 * 60 * 24 * 7; // 7 days (should match your refresh token expiry)
 
 // HELPERS
-
-
 const sanitizeUser = (user: any) => {
   const { password_hash, ...safeUser } = user;
   return safeUser;
 };
 
-
 // SIGNUP
-
 export const signup = async ({
   email,
   password,
@@ -68,13 +67,7 @@ export const signup = async ({
     );
   }
 
-  const freePlan = 1
-
-  // if (!freePlan) {
-  //   throw new AppError(ERRORS.PLAN_NOT_FOUND);
-  // }
-
-
+  const freePlan = 1;
 
   const payload = {
     userId: user.id,
@@ -84,18 +77,24 @@ export const signup = async ({
 
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken(payload);
+  const tokenHash = hashToken(refreshToken);
 
-  await createSession({
+  const session = await createSession({
     userId: user.id,
-    tokenHash: hashToken(refreshToken)
+    tokenHash
   });
 
+  // Cache the new session instantly
+  await redisClient.setEx(`session:hash:${tokenHash}`, CACHE_TTL_SESSION, JSON.stringify(session));
+
+  if (organization) {
     await createSubscription(
-    Number(organization.id),
-    Number(freePlan),
-    new Date(),
-    null
-  );
+      Number(organization.id),
+      Number(freePlan),
+      new Date(),
+      null
+    );
+  }
 
   return {
     user: sanitizeUser(user),
@@ -105,9 +104,7 @@ export const signup = async ({
   };
 };
 
-
 // LOGIN
-
 export const login = async ({
   email,
   password,
@@ -127,22 +124,33 @@ export const login = async ({
     throw new AppError(ERRORS.INVALID_CREDENTIALS);
   }
 
-  const valid = await comparePassword(
-    password,
-    user.password_hash
-  );
+  const valid = await comparePassword(password, user.password_hash);
 
   if (!valid) {
     throw new AppError(ERRORS.INVALID_CREDENTIALS);
   }
 
-  const organization = await findOrgByUser(user.id);
+  //  Read-Through Cache for Organization
+  const orgCacheKey = `org:byUser:${user.id}`;
+  let organization;
+  const cachedOrg = await redisClient.get(orgCacheKey);
+  
+  if (cachedOrg) {
+    organization = JSON.parse(cachedOrg);
+  } else {
+    organization = await findOrgByUser(user.id);
+    if (organization) {
+      await redisClient.setEx(orgCacheKey, CACHE_TTL_ORG, JSON.stringify(organization));
+    }
+  }
 
   // session limit
   const sessions = await getActiveSessions(user.id);
 
   if (sessions.length >= (user.max_sessions || 2)) {
-    await deactivateSession(sessions[0].id);
+    const oldSession = sessions[0];
+    await deactivateSession(oldSession.id);
+    await redisClient.del(`session:hash:${oldSession.token_hash}`); // Clear old session cache
   }
 
   const payload = {
@@ -153,14 +161,18 @@ export const login = async ({
 
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken(payload);
+  const tokenHash = hashToken(refreshToken);
 
-  await createSession({
+  const session = await createSession({
     userId: user.id,
-    tokenHash: hashToken(refreshToken),
+    tokenHash,
     device,
     ip,
     userAgent
   });
+
+  // Cache the new session
+  await redisClient.setEx(`session:hash:${tokenHash}`, CACHE_TTL_SESSION, JSON.stringify(session));
 
   return {
     user: sanitizeUser(user),
@@ -170,14 +182,24 @@ export const login = async ({
   };
 };
 
-
-// REFRESH
-
 // REFRESH
 export const refresh = async (token: string) => {
   try {
     const hashed = hashToken(token);
-    const session = await findSessionByToken(hashed);
+    const sessionCacheKey = `session:hash:${hashed}`;
+
+    //  Check Redis Cache for Session
+    let session;
+    const cachedSession = await redisClient.get(sessionCacheKey);
+    
+    if (cachedSession) {
+      session = JSON.parse(cachedSession);
+    } else {
+      session = await findSessionByToken(hashed);
+      if (session) {
+        await redisClient.setEx(sessionCacheKey, CACHE_TTL_SESSION, JSON.stringify(session));
+      }
+    }
 
     if (!session || !session.is_active) {
       throw new AppError(ERRORS.INVALID_SESSION);
@@ -188,38 +210,40 @@ export const refresh = async (token: string) => {
     const payload = {
       userId: decoded.userId,
       organizationId: decoded.organizationId,
-      role: decoded.role,         // ✅ was missing in login payload too (see below)
+      role: decoded.role,
     };
 
     const newAccessToken = signAccessToken(payload);
     const newRefreshToken = signRefreshToken(payload);
+    const newTokenHash = hashToken(newRefreshToken);
 
-    // rotate — delete old, create new
+    // rotate — delete old from DB & Redis
     await deleteSession(hashed);
-    await createSession({
+    await redisClient.del(sessionCacheKey);
+
+    // create new in DB & Redis
+    const newSession = await createSession({
       userId: decoded.userId,
-      tokenHash: hashToken(newRefreshToken),
+      tokenHash: newTokenHash,
     });
+    
+    await redisClient.setEx(`session:hash:${newTokenHash}`, CACHE_TTL_SESSION, JSON.stringify(newSession));
 
     return {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     };
   } catch (err) {
-    // ✅ Rethrow so the controller returns 401, not 500
     if (err instanceof AppError) throw err;
     throw new AppError(ERRORS.INVALID_SESSION);
   }
 };
 
-
 // LOGOUT
-
 export const logout = async (token: string) => {
   const hashed = hashToken(token);
+  
+  // Delete from both DB and Redis
   await deleteSession(hashed);
+  await redisClient.del(`session:hash:${hashed}`);
 };
-
-function getPlanByName(arg0: string) {
-  throw new Error("Function not implemented.");
-}
