@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import pool from "../config/database/postgresql.ts";
+import logger from "../config/log/logger.ts";
 
 async function runMigrations() {
   const migrationsDir = path.resolve(
@@ -48,7 +49,7 @@ async function runMigrations() {
     );
 
     if (alreadyRun.rowCount) {
-      //console.log(`⏭ Skipping ${file}`);
+      logger.info(`⏭ Skipping ${file}`);
       continue;
     }
 
@@ -64,7 +65,7 @@ async function runMigrations() {
 
     const start = Date.now();
 
-    //console.log(`🚀 Running ${file}`);
+    logger.info(`🚀 Running ${file}`);
 
     await pool.query("BEGIN");
 
@@ -102,14 +103,14 @@ async function runMigrations() {
     }
   }
 
-  //console.log("🎉 All migrations complete");
+  logger.info("🎉 All migrations complete");
 
   await pool.end();
   process.exit(0);
 }
 
 runMigrations().catch(async (error) => {
-  console.error("❌ Migration failed:", error);
+  logger.error("❌ Migration failed:", error);
 
   await pool.end();
   process.exit(1);

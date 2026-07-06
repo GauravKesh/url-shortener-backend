@@ -106,7 +106,7 @@ export const getOrgUrls = async (req: Request, res: Response, next: NextFunction
 */
 export const getOne = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const url = await getOneUrlService(Number(req.params.id), req.user);
+    const url = await getOneUrlService(String(req.params.urlId), req.user);
 
     return httpResponse(req, res, HTTP_STATUS.OK, MESSAGES.URL_FETCHED, url);
   } catch (err) {
@@ -120,7 +120,7 @@ export const getOne = async (req: Request, res: Response, next: NextFunction) =>
 export const update = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const updated = await updateUrlService(
-      Number(req.params.id),
+      String(req.params.urlId),
       req.user,
       req.body
     );
@@ -137,7 +137,7 @@ export const update = async (req: Request, res: Response, next: NextFunction) =>
 export const deleteUrl = async (req: Request, res: Response, next: NextFunction) => {
   try {
     await deleteUrlService(
-      Number(req?.params.id),
+      String(req?.params.urlId),
       Number(req?.user?.tenantId)
     );
 
