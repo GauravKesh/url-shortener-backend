@@ -3,25 +3,30 @@ import { findOrgByOrganizationId } from "../../repository/organization.repositor
 import { findPlanByName } from "../../repository/subscriptionPlan.repository.ts";
 import { AppError } from "../../utils/AppError.ts";
 import { ERRORS } from "../../constants/index.ts";
+import redisClient from "../../config/cache/redis.ts";
+import config from "../../config/config.ts";
+
+const DASHBOARD_CACHE_TTL = config.redis.ttl; 
 
 export const getDashboardSummary = async (organizationId: string) => {
-  if (!organizationId) {
-    throw new AppError(ERRORS.BAD_REQUEST);
+  if (!organizationId) throw new AppError(ERRORS.BAD_REQUEST);
+
+  const cacheKey = `dashboard:org:${organizationId}`;
+
+  //  Check Redis Cache First
+  const cachedDashboard = await redisClient.get(cacheKey);
+  if (cachedDashboard) {
+    return JSON.parse(cachedDashboard);
   }
 
-  // 1. Resolve organization context by its public UUID
+  //  Cache Miss: Resolve organization context
   const org = await findOrgByOrganizationId(organizationId);
-  if (!org) {
-    throw new AppError(ERRORS.ORGANIZATION_NOT_FOUND);
-  }
+  if (!org) throw new AppError(ERRORS.ORGANIZATION_NOT_FOUND);
 
-  // 2. Extract the internal database ID (bigint) for the queries
   const internalOrgId = Number(org.id); 
-
-  // Fetch the current plan details to build comparison quota progress bars
   const planDetails = await findPlanByName(org.current_plan || "FREE");
 
-  // 3. Fire database calls using the INTERNAL NUMERIC ID
+  //  Fire database calls
   const [counters, topLinks, recentLinks, chartData] = await Promise.all([
     dashboardRepo.getDashboardCounters(internalOrgId),
     dashboardRepo.getTopPerformingLinks(internalOrgId),
@@ -33,9 +38,10 @@ export const getDashboardSummary = async (organizationId: string) => {
   const totalClicksAccumulated = parseInt(counters.total_clicks || "0", 10);
   const maxLinksLimit = planDetails?.max_links || 100;
 
-  return {
+  //  Construct Response
+  const dashboardData = {
     organization: {
-      organizationId: org.organization_id, // Send the UUID back to the frontend
+      organizationId: org.organization_id,
       name: org.name,
       current_plan: org.current_plan,
     },
@@ -60,4 +66,10 @@ export const getDashboardSummary = async (organizationId: string) => {
     top_performing: topLinks,
     recent_activity: recentLinks,
   };
+
+  //  Save to Redis before returning (Fire-and-forget to avoid blocking)
+  redisClient.setEx(cacheKey, DASHBOARD_CACHE_TTL, JSON.stringify(dashboardData))
+    .catch(err => console.error(`Failed to cache dashboard for org ${organizationId}:`, err));
+
+  return dashboardData;
 };
