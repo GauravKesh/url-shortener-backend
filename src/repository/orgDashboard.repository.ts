@@ -1,6 +1,6 @@
 import pool from "../config/database/postgresql.ts";
 
-export const getDashboardCounters = async (orgId: string) => {
+export const getDashboardCounters = async (orgId: number) => {
   const { rows } = await pool.query(
     `
     SELECT 
@@ -14,7 +14,7 @@ export const getDashboardCounters = async (orgId: string) => {
   return rows[0];
 };
 
-export const getTopPerformingLinks = async (orgId: string, limit = 5) => {
+export const getTopPerformingLinks = async (orgId: number, limit = 5) => {
   const { rows } = await pool.query(
     `
     SELECT url_id, short_code, original_url, clicks, status, created_at
@@ -28,7 +28,7 @@ export const getTopPerformingLinks = async (orgId: string, limit = 5) => {
   return rows;
 };
 
-export const getRecentLinks = async (orgId: string, limit = 5) => {
+export const getRecentLinks = async (orgId: number, limit = 5) => {
   const { rows } = await pool.query(
     `
     SELECT url_id, short_code, original_url, clicks, status, created_at
@@ -42,13 +42,14 @@ export const getRecentLinks = async (orgId: string, limit = 5) => {
   return rows;
 };
 
-export const getClickAnalyticsOverTime = async (orgId: string, days = 7) => {
-  // Generates a daily series of clicks over the last X days for charts
+export const getClickAnalyticsOverTime = async (orgId: number, days = 7) => {
+  // Assuming no url_clicks table, this tracks Links Created over time 
+  // to avoid crashing if you don't have the clicks table.
   const { rows } = await pool.query(
     `
     SELECT 
       DATE(created_at) as click_date,
-      COALESCE(SUM(clicks), 0) as click_count
+      COUNT(id) as click_count
     FROM urls
     WHERE organization_id = $1 
       AND deleted_at IS NULL 
@@ -58,5 +59,6 @@ export const getClickAnalyticsOverTime = async (orgId: string, days = 7) => {
     `,
     [orgId, days]
   );
+  
   return rows;
 };
