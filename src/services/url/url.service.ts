@@ -164,7 +164,10 @@ export const updateUrlService = async (urlId: string, user: any, updates: any) =
 
     const normalizedUpdates = { ...updates };
 
-    if (normalizedUpdates.domainId !== undefined) {
+    if (normalizedUpdates.domainId === null) {
+        normalizedUpdates.domain_id = null;
+        delete normalizedUpdates.domainId;
+    } else if (normalizedUpdates.domainId !== undefined) {
         const domain = await findDomainByDomainId(
             String(normalizedUpdates.domainId),
             existingOrgId
@@ -176,6 +179,7 @@ export const updateUrlService = async (urlId: string, user: any, updates: any) =
 
         normalizedUpdates.domain_id = Number(domain.id);
         delete normalizedUpdates.domainId;
+    }
     }
 
     const updated = await updateUrl(urlId, normalizedUpdates);
