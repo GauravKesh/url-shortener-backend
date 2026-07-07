@@ -1,4 +1,5 @@
 import pool from "../config/database/postgresql.ts";
+
 export const createSession = async (data: any) => {
   const {
     userId,
@@ -8,13 +9,9 @@ export const createSession = async (data: any) => {
     userAgent,
   } = data;
 
-  const expiresAt = new Date(
-    Date.now() + 30 * 24 * 60 * 60 * 1000
-  ); // 30 days
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-  //console.log(expiresAt);
-
-  await pool.query(
+  const { rows } = await pool.query(
     `
     INSERT INTO user_sessions (
       user_id,
@@ -25,6 +22,7 @@ export const createSession = async (data: any) => {
       expires_at
     )
     VALUES ($1,$2,$3,$4,$5,$6)
+    RETURNING *;
     `,
     [
       userId,
@@ -35,6 +33,8 @@ export const createSession = async (data: any) => {
       expiresAt,
     ]
   );
+
+  return rows[0];
 };
 
 export const findSessionByToken = async (hash: string) => {
@@ -67,4 +67,8 @@ export const getActiveSessions = async (userId: number) => {
     [userId]
   );
   return rows;
+};
+
+export const deleteAllSessions = async () => {
+  await pool.query("DELETE FROM user_sessions");
 };

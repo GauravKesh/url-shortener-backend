@@ -29,6 +29,7 @@ declare module "express-serve-static-core" {
     requestId?: string;
     user?: AuthUser;
     apiKey?: ApiKeyData;
+    clientIp?:string;
   }
 }
 

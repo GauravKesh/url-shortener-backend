@@ -90,6 +90,10 @@ export const ERRORS = {
         code: "AUTH_010",
         message: "Email not verified",
         status: 403,
+    },SESSION_LIMIT_REACHED: {
+        code: "AUTH_011",
+        message: "Maximum session limit reached",
+        status: 401,
     },
 
     // User
