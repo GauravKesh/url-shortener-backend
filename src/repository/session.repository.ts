@@ -7,6 +7,7 @@ export const createSession = async (data: any) => {
     device,
     ip,
     userAgent,
+    location,
     expiresAt: providedExpiresAt,
   } = data;
 
@@ -23,10 +24,11 @@ export const createSession = async (data: any) => {
       device,
       ip_address,
       user_agent,
+      location,
       expires_at,
       last_used_at
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
     RETURNING *;
     `,
     [
