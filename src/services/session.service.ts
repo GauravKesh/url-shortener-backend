@@ -1,0 +1,111 @@
+import { AppError } from "../utils/AppError.ts";
+import { ERRORS } from "../constants/index.ts";
+import {
+  createSession as createSessionRepo,
+  findSessionByToken as findSessionByTokenRepo,
+  findSessionById as findSessionByIdRepo,
+  invalidateSessionByHash as invalidateSessionByHashRepo,
+  invalidateSessionsByUser as invalidateSessionsByUserRepo,
+  getActiveSessions as getActiveSessionsRepo,
+  getSessionsByUser as getSessionsByUserRepo,
+  updateSessionById as updateSessionByIdRepo,
+  deactivateSession as deactivateSessionRepo,
+} from "../repository/session.repository.ts";
+import redisClient from "../config/cache/redis.ts";
+
+export const createSession = async (data: any) => {
+  return createSessionRepo(data);
+};
+
+export const findSessionByToken = async (hash: string) => {
+  return findSessionByTokenRepo(hash);
+};
+
+export const invalidateSessionByHash = async (hash: string) => {
+  return invalidateSessionByHashRepo(hash);
+};
+
+export const invalidateOtherSessions = async (
+  userId: number,
+  excludeHash?: string
+) => {
+  return invalidateSessionsByUserRepo(userId, excludeHash);
+};
+
+export const getActiveSessions = async (userId: number) => {
+  return getActiveSessionsRepo(userId);
+};
+
+export const listUserSessions = async (
+  userId: number,
+  status: "active" | "inactive" | "all" = "all"
+) => {
+  return getSessionsByUserRepo(userId, status);
+};
+
+export const updateUserSession = async (
+  userId: number,
+  sessionId: number,
+  updates: { expiresAt?: string | Date; isActive?: boolean }
+) => {
+  const session = await findSessionByIdRepo(sessionId);
+
+  if (!session || session.user_id !== userId) {
+    throw new AppError(ERRORS.NOT_FOUND);
+  }
+
+  const updatePayload: {
+    expires_at?: Date;
+    is_active?: boolean;
+  } = {};
+
+  if (updates.expiresAt !== undefined) {
+    updatePayload.expires_at =
+      updates.expiresAt instanceof Date
+        ? updates.expiresAt
+        : new Date(updates.expiresAt);
+  }
+
+  if (updates.isActive !== undefined) {
+    updatePayload.is_active = updates.isActive;
+  }
+
+  const updatedSession = await updateSessionByIdRepo(sessionId, updatePayload);
+
+  // --- NEW: Clear Redis cache if session is deactivated ---
+  if (updates.isActive === false) {
+    const sessionHash = session.token_hash || session.tokenHash;
+    if (sessionHash) {
+      await redisClient.del(`session:hash:${sessionHash}`);
+    }
+  }
+
+  return updatedSession;
+};
+
+export const resetUserSessions = async (userId: number) => {
+  const sessions = await getActiveSessionsRepo(userId);
+
+  if (!sessions || sessions.length === 0) {
+    return { message: "No active sessions found" };
+  }
+
+  for (const session of sessions) {
+    const sessionId = session.id || session._id;
+    const sessionHash = session.token_hash || session.tokenHash;
+
+    if (sessionId) {
+      await deactivateSessionRepo(sessionId);
+    }
+
+    // --- NEW: Clear Redis cache for each revoked session ---
+    if (sessionHash) {
+      await redisClient.del(`session:hash:${sessionHash}`);
+    }
+  }
+
+  return {
+    message: `Successfully cleared ${sessions.length} session(s)`,
+  };
+};
+

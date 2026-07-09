@@ -49,6 +49,21 @@ export const apiRoutes: ApiRouteContract[] = [
   },
   {
     method: "POST",
+    path: "/auth/request-password-reset",
+    auth: "public",
+    requestBody: ["email"],
+    returns: ["message"],
+    notes: ["Sends password reset email (dev: resetUrl returned)"],
+  },
+  {
+    method: "POST",
+    path: "/auth/reset-password",
+    auth: "public",
+    requestBody: ["token", "newPassword"],
+    returns: ["message"],
+  },
+  {
+    method: "POST",
     path: "/auth/logout",
     auth: "public",
     returns: [],
@@ -95,6 +110,37 @@ export const apiRoutes: ApiRouteContract[] = [
     returns: [],
   },
   {
+    method: "GET",
+    path: "/sessions",
+    auth: "required",
+    queryParams: ["status?"],
+    returns: ["sessions"],
+    notes: ["List active/inactive sessions for the current user"],
+  },
+  {
+    method: "PATCH",
+    path: "/sessions/:sessionId",
+    auth: "required",
+    requestBody: ["expiresAt?"],
+    returns: ["session"],
+    notes: ["Update session metadata (expiry, active flag)"],
+  },
+  {
+    method: "POST",
+    path: "/sessions/:sessionId/revoke",
+    auth: "required",
+    returns: [],
+    notes: ["Revoke a specific session (log out other device)"]
+  },
+  {
+    method: "GET",
+    path: "/users/login-activity",
+    auth: "required",
+    queryParams: ["limit?","offset?","since?"],
+    returns: ["activities"],
+    notes: ["Returns recent login activity for the authenticated user in structured form for security auditing"]
+  },
+  {
     method: "POST",
     path: "/org",
     auth: "required",
@@ -132,6 +178,13 @@ export const apiRoutes: ApiRouteContract[] = [
     auth: "required",
     requestBody: ["planId"],
     returns: ["organization", "subscription", "plan"],
+  },
+  {
+    method: "GET",
+    path: "/subscription/plans",
+    auth: "public",
+    returns: ["plans"],
+    notes: ["Public list of available subscription plans"],
   },
   {
     method: "GET",
@@ -246,3 +299,84 @@ export const apiErrorEnvelope = {
   code: "AUTH_004",
   message: "Unauthorized",
 };
+
+export const API = {
+  AUTH: {
+    SIGNUP: "/auth/signup",
+    LOGIN: "/auth/login",
+    REQUEST_PASSWORD_RESET: "/auth/request-password-reset",
+    RESET_PASSWORD: "/auth/reset-password",
+    LOGOUT: "/auth/logout",
+    REFRESH: "/auth/refresh",
+    ME: "/auth/me",
+  },
+
+  USER: {
+    ME: "/user/me",
+    UPDATE: "/user/me",
+    CHANGE_PASSWORD: "/user/change-password",
+    DELETE: "/user/me",
+  },
+
+  ORG: {
+    CREATE: "/org",
+    ME: "/org/me",
+    BY_ID: (id: string) => `/org/${id}`,
+  },
+
+  ORG_DASHBOARD: {
+    SUMMARY: (orgPublicId: string) => `/org/dashboard/summary/${orgPublicId}`,
+  },
+
+  SUBSCRIPTION: {
+    PURCHASE: "/subscription/purchase",
+    CURRENT: "/subscription/current",
+    PLANS: "/subscription/plans",
+  },
+
+  USAGE: {
+    CURRENT: "/usage/current",
+  },
+
+  API_KEY: {
+    CREATE: "/apikey",
+    LIST: "/apikey",
+    UPDATE: (id: string) => `/apikey/${id}`,
+    REVOKE: (id: string) => `/apikey/${id}/revoke`,
+    DELETE: (id: string) => `/apikey/${id}`,
+  },
+
+  URL: {
+    CREATE: "/url/create",
+    PUBLIC_CREATE: "/url/create/public",
+    USER: "/url/user",
+    ORG: "/url/org",
+    GET: (id: string) => `/url/${id}`,
+    UPDATE: (id: string) => `/url/${id}`,
+    DELETE: (id: string) => `/url/${id}`,
+    REDIRECT: (shortCode: string) => `/url/r/${shortCode}`,
+  },
+
+  USER_ACTIVITY: {
+    LOGIN_ACTIVITY: "/users/login-activity",
+  },
+
+  SESSIONS: {
+    LIST: "/sessions",
+    UPDATE: (id: string) => `/sessions/${id}`,
+    REVOKE: (id: string) => `/sessions/${id}/revoke`,
+    LOGIN_ACTIVITY: "/sessions/login-activity",
+  },
+
+  HEALTH: {
+    STATUS: "/health",
+    READY: "/health/ready",
+    FULL: "/health/full",
+  },
+
+  DASHBOARD: {
+    SUMMARY: "/dashboard/summary",
+    RECENT_URLS: "/dashboard/recent-urls",
+    TOP_URLS: "/dashboard/top-urls",
+  },
+} as const;

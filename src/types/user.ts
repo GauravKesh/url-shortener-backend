@@ -58,4 +58,16 @@ export interface IChangePasswordInput {
   userId: number;
   oldPassword: string;
   newPassword: string;
+  logoutOtherSessions?: boolean;
+  currentSessionHash?: string;
+}
+
+export interface IPasswordResetRequestInput {
+  email: string;
+}
+
+export interface IPasswordResetConfirmInput {
+  token: string;
+  newPassword: string;
+  logoutOtherSessions?: boolean;
 }
