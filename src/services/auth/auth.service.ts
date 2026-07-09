@@ -21,6 +21,10 @@ import * as passwordResetService from "../passwordReset.service.ts";
 import config from "../../config/config.ts";
 import { createSubscription } from "../../repository/subscription.repository.ts";
 import logger from "../../config/log/logger.ts";
+import {
+  cancelUserDeletion,
+  cancelOrganizationDeletion,
+} from "../cleanup/deletion.service.ts";
 
 const CACHE_TTL_ORG = 60 * 60;
 const CACHE_TTL_SESSION = 60 * 60 * 24 * 7;
@@ -231,6 +235,16 @@ export const login = async ({
     ip,
     device,
   });
+
+  // On successful login, cancel any scheduled deletion for the user and their org
+  try {
+    await cancelUserDeletion(user.id);
+    if (organization?.organization_id) {
+      await cancelOrganizationDeletion(String(organization.organization_id));
+    }
+  } catch (err) {
+    logger.warn("Failed to cancel scheduled deletion on login", { err, userId: user.id });
+  }
 
   return {
     user: sanitizeUser(user),

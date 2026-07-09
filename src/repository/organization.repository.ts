@@ -151,10 +151,10 @@ export const deleteOrganization = async (organizationId: string) => {
     `
     UPDATE organizations
     SET
-      deleted_at = NOW(),
+      deletion_requested_at = NOW(),
       updated_at = NOW()
     WHERE organization_id = $1
-      AND deleted_at IS NULL
+      AND deletion_requested_at IS NULL
     RETURNING *
     `,
     [organizationId]

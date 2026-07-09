@@ -12,6 +12,7 @@
     "build": "tsc && cp -R src/docs dist/docs",
     "migrate:dev": "NODE_ENV=development tsx src/scripts/migrate.ts",
     "migrate:prod": "NODE_ENV=production tsx src/scripts/migrate.ts",
+    "process:deletions": "NODE_ENV=production tsx src/scripts/process-deletions.ts",
     "start": "node dist/src/server.js"
   },
   "keywords": [
