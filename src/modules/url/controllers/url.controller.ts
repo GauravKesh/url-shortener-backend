@@ -9,13 +9,13 @@ import {
   deleteUrlService,
   redirectService,
   createUrlServicePublic,
-} from "../../services/url/url.service.ts";
+} from "../services/url.service.ts";
 
-import httpResponse from "../../utils/httpResponse.ts";
-import httpError from "../../utils/httpError.ts";
+import httpResponse from "../../../utils/httpResponse.ts";
+import httpError from "../../../utils/httpError.ts";
 
-import { ERRORS, HTTP_STATUS, MESSAGES } from "../../constants/index.ts";
-import { AppError } from "../../utils/AppError.ts";
+import { ERRORS, HTTP_STATUS, MESSAGES } from "../../../constants/index.ts";
+import { AppError } from "../../../utils/AppError.ts";
 
 /*
   Create

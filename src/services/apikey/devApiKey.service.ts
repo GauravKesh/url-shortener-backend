@@ -2,10 +2,10 @@ import { AppError } from "../../utils/AppError.ts";
 import { ERRORS } from "../../constants/index.ts";
 import redisClient from "../../config/cache/redis.ts";
 
-import { createUrl } from "../../repository/url.repository.ts";
+import { createUrl } from "../../modules/url/repository/url.repository.ts";
 import { incrementApiKeyLinkCount } from "../../repository/apiKey.repository.ts";
-import { generateShortCode } from "../url/generateShortCode.service.ts";
-import { increment } from "../usage/usage.service.ts";
+import { generateShortCode } from "../../modules/url/services/generateShortCode.service.ts";
+import { increment } from "../../modules/usage/usage.service.ts";
 import { enforceLinkCreationLimit } from "../subscription/enforcePlanLimits.ts";
 
 interface CreateUrlViaApiKeyDto {

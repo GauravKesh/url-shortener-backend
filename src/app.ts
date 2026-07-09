@@ -6,7 +6,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 
 
-import routers from "./apis/routes/index.ts";
+import v1Router from "./apis/v1/index.ts";
 import { globalErrorHandler } from "./middleware/globalErrorHandler.ts";
 import { requestLogger } from "./middleware/requestLogger.middleware.ts";
 import { requestIdMiddleware } from "./middleware/requestId.middleware.ts";
@@ -92,7 +92,7 @@ app.get("/", (req, res) => {
   `);
 });
 
-app.use("/api/v1", routers);
+app.use("/api/v1", v1Router);
 
 
 // 404 HANDLER (important)
