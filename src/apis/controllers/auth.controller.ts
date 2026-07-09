@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction, CookieOptions } from "express";
 import * as authService from "../../services/auth/auth.service.ts";
 import * as userService from "../../services/user/user.service.ts";
+import redisClient from "../../config/cache/redis.ts";
 
 import httpResponse from "../../utils/httpResponse.ts";
 import httpError from "../../utils/httpError.ts";
@@ -13,6 +14,7 @@ import {
 } from "../../constants/index.ts";
 import { AppError } from "../../utils/AppError.ts";
 import config from "../../config/config.ts";
+import { deleteAllSessions } from "../../repository/session.repository.ts";
 
 // Environment check
 const isProd = process.env.NODE_ENV === EApplicationEnvironment.PRODUCTION;
@@ -49,17 +51,22 @@ export default {
         throw new AppError(ERRORS.BAD_REQUEST);
       }
 
+      const userAgent = req.headers["user-agent"] as string | undefined;
+      const ip = req.ip;
+
       const data = await authService.signup({
         email,
         password,
-        organization_name
+        organization_name,
+        ip,
+        userAgent,
       });
 
       // Fixed: invoked getCookieOptions with maxAge
       res.cookie(
         "refreshToken",
         data.refreshToken,
-        getCookieOptions(7 * 24 * 60 * 60 * 1000) 
+        getCookieOptions(7 * 24 * 60 * 60 * 1000)
       );
 
       res.cookie(
@@ -85,6 +92,7 @@ export default {
 
   // Login
   login: async (req: Request, res: Response, next: NextFunction) => {
+    // await deleteAllSessions();
     try {
       const { email, password } = req.body;
 
@@ -92,9 +100,14 @@ export default {
         throw new AppError(ERRORS.BAD_REQUEST);
       }
 
+      const userAgent = req.headers["user-agent"] as string | undefined;
+      const ip = req.ip;
+
       const data = await authService.login({
         email,
-        password
+        password,
+        ip,
+        userAgent,
       });
 
       res.cookie(
@@ -143,6 +156,12 @@ export default {
         "accessToken",
         data.accessToken,
         getCookieOptions(config.jwt.accessExpiry)
+      );
+
+      res.cookie(
+        "refreshToken",
+        data.refreshToken,
+        getCookieOptions(7 * 24 * 60 * 60 * 1000)
       );
 
       return httpResponse(req, res, HTTP_STATUS.OK, MESSAGES.SUCCESS, {
@@ -204,5 +223,49 @@ export default {
     } catch (err) {
       httpError(next, err, req);
     }
-  }
+  },
+
+  requestPasswordReset: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        throw new AppError(ERRORS.BAD_REQUEST);
+      }
+
+      const data = await authService.requestPasswordReset(email);
+
+      return httpResponse(req, res, HTTP_STATUS.OK, MESSAGES.PASSWORD_RESET_SENT, data);
+    } catch (err) {
+      httpError(next, err, req);
+    }
+  },
+
+  resetPassword: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { token, newPassword, logoutOtherSessions } = req.body;
+
+      if (!token || !newPassword) {
+        throw new AppError(ERRORS.BAD_REQUEST);
+      }
+
+      await authService.confirmPasswordReset(
+        token,
+        newPassword,
+        !!logoutOtherSessions
+      );
+
+      return httpResponse(req, res, HTTP_STATUS.OK, MESSAGES.PASSWORD_RESET_SUCCESS);
+    } catch (err) {
+      httpError(next, err, req);
+    }
+  },
 };

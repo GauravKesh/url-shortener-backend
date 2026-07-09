@@ -116,3 +116,9 @@ jest.setup.js
 # Docker
 # Dockerfile
 src/config/database/postgresql.ts
+docs/api-enpoints/api-endpoint-detials.json
+.gitignore
+scripts/generate-api-endpoints-json.js
+.gitignore
+scripts/generate-api-endpoints-json.cjs
+docs/api-enpoints/api-endpoint-detials.ts

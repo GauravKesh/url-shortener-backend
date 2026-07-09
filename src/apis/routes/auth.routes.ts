@@ -6,6 +6,8 @@ const AuthRouter = Router();
 
 AuthRouter.post("/signup", authController.signup);
 AuthRouter.post("/login", authController.login);
+AuthRouter.post("/request-password-reset", authController.requestPasswordReset);
+AuthRouter.post("/reset-password", authController.resetPassword);
 
 AuthRouter.post("/logout", authController.logout);
 AuthRouter.post("/refresh", authController.refresh);

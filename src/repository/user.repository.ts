@@ -45,7 +45,7 @@ export const updateUser = async (id: number, updates: any) => {
 
 export const deleteUser = async (id: number) => {
   await pool.query(
-    "UPDATE users SET deleted_at = NOW() WHERE id = $1",
+    "UPDATE users SET deletion_requested_at = NOW() WHERE id = $1",
     [id]
   );
 };

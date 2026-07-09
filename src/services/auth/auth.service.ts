@@ -1,6 +1,5 @@
-import { hashPassword, comparePassword } from "../../utils/hash.ts";
+import { hashPassword, comparePassword, hashToken } from "../../utils/hash.ts";
 import { signAccessToken, signRefreshToken } from "../../utils/jwt.ts";
-import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
 import { AppError } from "../../utils/AppError.ts";
@@ -16,21 +15,16 @@ import {
   createOrganization,
   findOrgByUser
 } from "../../repository/organization.repository.ts";
-
-import {
-  createSession,
-  findSessionByToken,
-  deleteSession,
-  getActiveSessions,
-  deactivateSession
-} from "../../repository/session.repository.ts";
+import * as sessionService from "../session.service.ts";
+import * as passwordResetService from "../passwordReset.service.ts";
 
 import config from "../../config/config.ts";
 import { createSubscription } from "../../repository/subscription.repository.ts";
 import logger from "../../config/log/logger.ts";
-
-const hashToken = (token: string) =>
-  crypto.createHash("sha256").update(token).digest("hex");
+import {
+  cancelUserDeletion,
+  cancelOrganizationDeletion,
+} from "../cleanup/deletion.service.ts";
 
 const CACHE_TTL_ORG = 60 * 60;
 const CACHE_TTL_SESSION = 60 * 60 * 24 * 7;
@@ -45,12 +39,14 @@ export const signup = async ({
   email,
   password,
   organization_name,
-  ip
+  ip,
+  userAgent,
 }: {
   email: string;
   password: string;
   organization_name?: string;
-  ip?: string
+  ip?: string;
+  userAgent?: string;
 }) => {
   logger.info("Initiating user signup", { email });
 
@@ -86,9 +82,9 @@ export const signup = async ({
   const refreshToken = signRefreshToken(payload);
   const tokenHash = hashToken(refreshToken);
 
-  const session = await createSession({
+  const session = await sessionService.createSession({
     userId: user.id,
-    tokenHash
+    tokenHash,
   });
 
   await redisClient.setEx(`session:hash:${tokenHash}`, CACHE_TTL_SESSION, JSON.stringify(session));
@@ -166,7 +162,7 @@ export const login = async ({
     }
   }
 
-  const sessions = await getActiveSessions(user.id);
+  const sessions = await sessionService.getActiveSessions(user.id);
   const maxSessions = user.max_sessions || 2;
 
   // if (sessions.length >= maxSessions) {
@@ -210,7 +206,7 @@ export const login = async ({
   const refreshToken = signRefreshToken(payload);
   const tokenHash = hashToken(refreshToken);
 
-  const session = await createSession({
+  const session = await sessionService.createSession({
     userId: user.id,
     tokenHash,
     device,
@@ -240,12 +236,37 @@ export const login = async ({
     device,
   });
 
+  // On successful login, cancel any scheduled deletion for the user and their org
+  try {
+    await cancelUserDeletion(user.id);
+    if (organization?.organization_id) {
+      await cancelOrganizationDeletion(String(organization.organization_id));
+    }
+  } catch (err) {
+    logger.warn("Failed to cancel scheduled deletion on login", { err, userId: user.id });
+  }
+
   return {
     user: sanitizeUser(user),
     organization,
     accessToken,
     refreshToken,
   };
+};
+
+export const listUserSessions = async (
+  userId: number,
+  status: "active" | "inactive" | "all" = "all"
+) => {
+  return sessionService.listUserSessions(userId, status);
+};
+
+export const updateUserSession = async (
+  userId: number,
+  sessionId: number,
+  updates: { expiresAt?: string | Date; isActive?: boolean }
+) => {
+  return sessionService.updateUserSession(userId, sessionId, updates);
 };
 
 // REFRESH
@@ -264,7 +285,7 @@ export const refresh = async (token: string, ip?: string) => {
       session = JSON.parse(cachedSession);
     } else {
       logger.debug("Session fetch: Redis cache miss, fetching from DB", {});
-      session = await findSessionByToken(hashed);
+      session = await sessionService.findSessionByToken(hashed);
       if (session) {
         await redisClient.setEx(sessionCacheKey, CACHE_TTL_SESSION, JSON.stringify(session));
       }
@@ -287,11 +308,11 @@ export const refresh = async (token: string, ip?: string) => {
     const newRefreshToken = signRefreshToken(payload);
     const newTokenHash = hashToken(newRefreshToken);
 
-    await deleteSession(hashed);
+    await sessionService.invalidateSessionByHash(hashed);
     await redisClient.del(sessionCacheKey);
-    logger.debug("Old session deleted", { userId: decoded.userId });
+    logger.debug("Old session invalidated", { userId: decoded.userId });
 
-    const newSession = await createSession({
+    const newSession = await sessionService.createSession({
       userId: decoded.userId,
       tokenHash: newTokenHash,
     });
@@ -311,16 +332,32 @@ export const refresh = async (token: string, ip?: string) => {
   }
 };
 
+export const requestPasswordReset = async (email: string) => {
+  return passwordResetService.requestPasswordReset(email);
+};
+
+export const confirmPasswordReset = async (
+  token: string,
+  newPassword: string,
+  logoutOtherSessions = false
+) => {
+  return passwordResetService.confirmPasswordReset(
+    token,
+    newPassword,
+    logoutOtherSessions
+  );
+};
+
 // LOGOUT
 export const logout = async (token: string, ip?: string) => {
   try {
     const hashed = hashToken(token);
     logger.info("Logout initiated", {});
 
-    await deleteSession(hashed);
+    await sessionService.invalidateSessionByHash(hashed);
     await redisClient.del(`session:hash:${hashed}`);
 
-    logger.info("Logout completed, session destroyed", {});
+    logger.info("Logout completed, session invalidated", {});
   } catch (err) {
     logger.error("Error occurred during logout", { err });
     throw err;
@@ -328,39 +365,5 @@ export const logout = async (token: string, ip?: string) => {
 };
 
 export const resetUserSessions = async (userId: number) => {
-  try {
-    logger.info("Initiating manual session reset", { userId });
-
-    // 1. Get all active sessions for this user
-    const sessions = await getActiveSessions(userId);
-
-    if (!sessions || sessions.length === 0) {
-      logger.info("No active sessions found to reset", { userId });
-      return { message: "No active sessions found" };
-    }
-
-    // 2. Iterate and delete from both DB and Redis
-    for (const session of sessions) {
-      // Safely access properties just in case of snake_case vs camelCase mismatch
-      const sessionId = session.id || session._id;
-      const sessionHash = session.token_hash || session.tokenHash;
-
-      if (sessionId) {
-        await deactivateSession(sessionId); // Or deleteSession() depending on your preference
-      }
-
-      if (sessionHash) {
-        await redisClient.del(`session:hash:${sessionHash}`);
-      }
-    }
-
-    logger.info("Successfully reset all user sessions", { userId, count: sessions.length });
-
-    return {
-      message: `Successfully cleared ${sessions.length} session(s)`
-    };
-  } catch (err) {
-    logger.error("Failed to reset user sessions", { err, userId });
-    throw err;
-  }
+  return sessionService.resetUserSessions(userId);
 };
