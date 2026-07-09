@@ -15,6 +15,7 @@ import { globalRateLimiter } from "./middleware/globalRateLimiter.middleware.ts"
 import config from "./config/config.ts";
 
 const app = express();
+app.set("trust proxy", 1);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,25 +28,25 @@ const __dirname = path.dirname(__filename);
 const allowedOrigins =
   process.env.NODE_ENV === "production"
     ? [
-        config.app.frontendUrl,
-        config.app.adminUrl, // optional
-      ].filter(Boolean)
+      config.app.frontendUrl,
+      config.app.adminUrl, // optional
+    ].filter(Boolean)
     : [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-      ];
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+    ];
 
 
 const corsOptions = {
-    origin: function (origin:any, callback:any) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(null, true); // relaxed
-        }
-    },
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
+  origin: function (origin: any, callback: any) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // relaxed
+    }
+  },
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
