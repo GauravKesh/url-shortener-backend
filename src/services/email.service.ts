@@ -1,10 +1,10 @@
 import nodemailer from "nodemailer";
 import config from "../config/config.ts";
 import logger from "../config/log/logger.ts";
-import {
+import { renderTemplate } from "./email/templates/index.ts";
+import type {
   EmailTemplateName,
   EmailTemplateData,
-  renderTemplate,
   SendTemplateEmailOptions,
 } from "./email/templates/index.ts";
 
