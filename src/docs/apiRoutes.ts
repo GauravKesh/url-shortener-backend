@@ -49,6 +49,21 @@ export const apiRoutes: ApiRouteContract[] = [
   },
   {
     method: "POST",
+    path: "/auth/request-password-reset",
+    auth: "public",
+    requestBody: ["email"],
+    returns: ["message"],
+    notes: ["Sends password reset email (dev: resetUrl returned)"],
+  },
+  {
+    method: "POST",
+    path: "/auth/reset-password",
+    auth: "public",
+    requestBody: ["token", "newPassword"],
+    returns: ["message"],
+  },
+  {
+    method: "POST",
     path: "/auth/logout",
     auth: "public",
     returns: [],
@@ -95,6 +110,29 @@ export const apiRoutes: ApiRouteContract[] = [
     returns: [],
   },
   {
+    method: "GET",
+    path: "/sessions",
+    auth: "required",
+    queryParams: ["status?"],
+    returns: ["sessions"],
+    notes: ["List active/inactive sessions for the current user"],
+  },
+  {
+    method: "PATCH",
+    path: "/sessions/:sessionId",
+    auth: "required",
+    requestBody: ["expiresAt?"],
+    returns: ["session"],
+    notes: ["Update session metadata (expiry, active flag)"],
+  },
+  {
+    method: "POST",
+    path: "/sessions/:sessionId/revoke",
+    auth: "required",
+    returns: [],
+    notes: ["Revoke a specific session (log out other device)"]
+  },
+  {
     method: "POST",
     path: "/org",
     auth: "required",
@@ -132,6 +170,13 @@ export const apiRoutes: ApiRouteContract[] = [
     auth: "required",
     requestBody: ["planId"],
     returns: ["organization", "subscription", "plan"],
+  },
+  {
+    method: "GET",
+    path: "/subscription/plans",
+    auth: "public",
+    returns: ["plans"],
+    notes: ["Public list of available subscription plans"],
   },
   {
     method: "GET",
