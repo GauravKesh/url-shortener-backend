@@ -25,6 +25,7 @@ import {
   cancelUserDeletion,
   cancelOrganizationDeletion,
 } from "../cleanup/deletion.service.ts";
+import { getLocationFromIpInternal } from "../../utils/geo.ts";
 
 const CACHE_TTL_ORG = 60 * 60;
 const CACHE_TTL_SESSION = 60 * 60 * 24 * 7;
@@ -205,13 +206,14 @@ export const login = async ({
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken(payload);
   const tokenHash = hashToken(refreshToken);
-
+  const location = getLocationFromIpInternal(ip);
   const session = await sessionService.createSession({
     userId: user.id,
     tokenHash,
     device,
     ip,
     userAgent,
+    location,
   });
 
   if (!session) {
