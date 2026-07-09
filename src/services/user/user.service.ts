@@ -9,6 +9,7 @@ import {
   deleteUser
 } from "../../repository/user.repository.ts";
 
+import * as sessionService from "../session.service.ts";
 import { hashPassword, comparePassword } from "../../utils/hash.ts";
 
 import type {
@@ -109,7 +110,9 @@ export const updateProfile = async (
 export const changePassword = async ({
   userId,
   oldPassword,
-  newPassword
+  newPassword,
+  logoutOtherSessions = false,
+  currentSessionHash,
 }: IChangePasswordInput): Promise<boolean> => {
   const user = await findUserById(userId);
 
@@ -132,6 +135,10 @@ export const changePassword = async ({
     password_hash: hashed,
     password_changed_at: new Date()
   });
+
+  if (logoutOtherSessions) {
+    await sessionService.invalidateOtherSessions(userId, currentSessionHash);
+  }
 
   // Invalidate cache since password_changed_at likely updated on the profile
   await invalidateUserCache(user);

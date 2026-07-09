@@ -49,10 +49,15 @@ export default {
         throw new AppError(ERRORS.BAD_REQUEST);
       }
 
+      const userAgent = req.headers["user-agent"] as string | undefined;
+      const ip = req.ip;
+
       const data = await authService.signup({
         email,
         password,
-        organization_name
+        organization_name,
+        ip,
+        userAgent,
       });
 
       // Fixed: invoked getCookieOptions with maxAge
@@ -92,9 +97,14 @@ export default {
         throw new AppError(ERRORS.BAD_REQUEST);
       }
 
+      const userAgent = req.headers["user-agent"] as string | undefined;
+      const ip = req.ip;
+
       const data = await authService.login({
         email,
-        password
+        password,
+        ip,
+        userAgent,
       });
 
       res.cookie(
@@ -204,5 +214,49 @@ export default {
     } catch (err) {
       httpError(next, err, req);
     }
-  }
+  },
+
+  requestPasswordReset: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        throw new AppError(ERRORS.BAD_REQUEST);
+      }
+
+      const data = await authService.requestPasswordReset(email);
+
+      return httpResponse(req, res, HTTP_STATUS.OK, MESSAGES.PASSWORD_RESET_SENT, data);
+    } catch (err) {
+      httpError(next, err, req);
+    }
+  },
+
+  resetPassword: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { token, newPassword, logoutOtherSessions } = req.body;
+
+      if (!token || !newPassword) {
+        throw new AppError(ERRORS.BAD_REQUEST);
+      }
+
+      await authService.confirmPasswordReset(
+        token,
+        newPassword,
+        !!logoutOtherSessions
+      );
+
+      return httpResponse(req, res, HTTP_STATUS.OK, MESSAGES.PASSWORD_RESET_SUCCESS);
+    } catch (err) {
+      httpError(next, err, req);
+    }
+  },
 };

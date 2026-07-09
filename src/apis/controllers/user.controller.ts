@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import { hashToken } from "../../utils/hash.ts";
 
 import * as userService from "../../services/user/user.service.ts";
 
@@ -89,7 +90,9 @@ export default {
         throw new AppError(ERRORS.FORBIDDEN);
       }
 
-      const { oldPassword, newPassword } = req.body;
+      const { oldPassword, newPassword, logoutOtherSessions } = req.body;
+      const refreshToken = req.cookies?.refreshToken;
+      const currentSessionHash = refreshToken ? hashToken(refreshToken) : undefined;
 
       if (!oldPassword || !newPassword) {
         throw new AppError(ERRORS.BAD_REQUEST);
@@ -98,7 +101,9 @@ export default {
       await userService.changePassword({
         userId,
         oldPassword,
-        newPassword
+        newPassword,
+        logoutOtherSessions: !!logoutOtherSessions,
+        currentSessionHash,
       });
 
       return httpResponse(

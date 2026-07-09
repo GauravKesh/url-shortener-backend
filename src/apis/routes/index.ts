@@ -11,6 +11,7 @@ import usageRoutes from "./usage.routes.ts";
 import dashBoardRoutes from "./dashboard.routes.ts";
 import devApiRoute from "./devApiKey.routes.ts";
 import orgDashboardRouter from "./orgdashboard.routes.ts";
+import sessionRoutes from "./session.routes.ts";
 
 const routers = Router();
 
@@ -24,6 +25,7 @@ routers.use("/subscription", subscriptionRouter);
 routers.use("/usage", usageRoutes);
 routers.use("/apikey", apiKeyRoutes);
 routers.use("/dev", devApiRoute);
+routers.use("/sessions", sessionRoutes);
 routers.use("/health", healthRoutes)
 routers.use("/url", urlRoutes)
 
