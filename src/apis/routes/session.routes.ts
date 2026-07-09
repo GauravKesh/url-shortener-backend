@@ -7,6 +7,7 @@ const sessionRouter = Router();
 sessionRouter.use(authenticate);
 
 sessionRouter.get("/", sessionController.list);
+sessionRouter.get("/login-activity", sessionController.loginActivity);
 sessionRouter.patch("/:sessionId", sessionController.update);
 sessionRouter.post("/:sessionId/revoke", sessionController.revoke);
 

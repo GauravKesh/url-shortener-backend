@@ -152,7 +152,7 @@ export const getActiveSessions = async (userId: number) => {
   return rows;
 };
 
-export const getSessionsByUser = async (
+export const getSessionsByUserTerminated = async (
   userId: number,
   status: "active" | "inactive" | "all" = "all"
 ) => {
@@ -167,6 +167,45 @@ export const getSessionsByUser = async (
   query += " ORDER BY created_at DESC";
 
   const { rows } = await pool.query(query, [userId]);
+  return rows;
+};
+
+export const getSessionsByUser = async (userId: number) => {
+  const query = `
+    SELECT * FROM user_sessions 
+    WHERE user_id = $1 
+      AND is_active = true 
+      AND expires_at > NOW() 
+    ORDER BY created_at DESC
+  `;
+
+  const { rows } = await pool.query(query, [userId]);
+  return rows;
+};
+
+export const getLoginActivityByUser = async (
+  userId: number,
+  opts: { limit?: number; offset?: number; since?: string } = {}
+) => {
+  const limit = opts.limit ?? 50;
+  const offset = opts.offset ?? 0;
+  const params: any[] = [userId];
+
+  let query = `SELECT id, device, ip_address, user_agent, is_active, expires_at, last_used_at, created_at
+               FROM user_sessions
+               WHERE user_id = $1`;
+
+  if (opts.since) {
+    params.push(opts.since);
+    query += ` AND created_at >= $${params.length}`;
+  }
+
+  params.push(limit);
+  params.push(offset);
+
+  query += ` ORDER BY created_at DESC LIMIT $${params.length - 1} OFFSET $${params.length}`;
+
+  const { rows } = await pool.query(query, params);
   return rows;
 };
 

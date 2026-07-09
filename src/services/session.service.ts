@@ -11,6 +11,7 @@ import {
   updateSessionById as updateSessionByIdRepo,
   deactivateSession as deactivateSessionRepo,
 } from "../repository/session.repository.ts";
+import redisClient from "../config/cache/redis.ts";
 
 export const createSession = async (data: any) => {
   return createSessionRepo(data);
@@ -69,7 +70,17 @@ export const updateUserSession = async (
     updatePayload.is_active = updates.isActive;
   }
 
-  return updateSessionByIdRepo(sessionId, updatePayload);
+  const updatedSession = await updateSessionByIdRepo(sessionId, updatePayload);
+
+  // --- NEW: Clear Redis cache if session is deactivated ---
+  if (updates.isActive === false) {
+    const sessionHash = session.token_hash || session.tokenHash;
+    if (sessionHash) {
+      await redisClient.del(`session:hash:${sessionHash}`);
+    }
+  }
+
+  return updatedSession;
 };
 
 export const resetUserSessions = async (userId: number) => {
@@ -81,9 +92,15 @@ export const resetUserSessions = async (userId: number) => {
 
   for (const session of sessions) {
     const sessionId = session.id || session._id;
+    const sessionHash = session.token_hash || session.tokenHash;
 
     if (sessionId) {
       await deactivateSessionRepo(sessionId);
+    }
+
+    // --- NEW: Clear Redis cache for each revoked session ---
+    if (sessionHash) {
+      await redisClient.del(`session:hash:${sessionHash}`);
     }
   }
 
@@ -91,3 +108,4 @@ export const resetUserSessions = async (userId: number) => {
     message: `Successfully cleared ${sessions.length} session(s)`,
   };
 };
+
