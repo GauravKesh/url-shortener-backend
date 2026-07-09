@@ -31,7 +31,8 @@ export const listUserSessions = async (
   userId: number,
   status: "active" | "inactive" | "all" = "all"
 ) => {
-  return getSessionsByUserRepo(userId, status);
+  return getSessionsByUserRepo(userId);
+  // return getSessionsByUserRepo(userId, status);
 };
 
 export const updateUserSession = async (
