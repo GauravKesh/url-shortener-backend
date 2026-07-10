@@ -206,7 +206,8 @@ export const login = async ({
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken(payload);
   const tokenHash = hashToken(refreshToken);
-  const location = getLocationFromIpInternal(ip);
+  const location = getLocationFromIpInternal(ip) || "Unknown Location";
+  // console.log(location);
   const session = await sessionService.createSession({
     userId: user.id,
     tokenHash,
