@@ -194,7 +194,7 @@ export const getLoginActivityByUser = async (
   const offset = opts.offset ?? 0;
   const params: any[] = [userId];
 
-  let query = `SELECT id, device, ip_address, user_agent, is_active, expires_at, last_used_at, created_at
+  let query = `SELECT id, device, location,ip_address, user_agent, is_active, expires_at, last_used_at, created_at
                FROM user_sessions
                WHERE user_id = $1`;
 
