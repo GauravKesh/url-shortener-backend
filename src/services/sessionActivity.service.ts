@@ -32,7 +32,7 @@ export const getUserLoginActivity = async (userId: number, opts: ActivityOptions
 
     return {
       id: String(r.id),
-      location: null,
+      location: r.location,
       device: r.device || r.user_agent || null,
       ipAddress: r.ip_address || null,
       occurredAt: (r.created_at || r.last_used_at) ? new Date(r.created_at || r.last_used_at).toISOString() : null,
