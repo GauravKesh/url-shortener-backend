@@ -94,7 +94,7 @@ const logger = winston.createLogger({
 });
 
 //  development → console logs
-if (config.app.env === EApplicationEnvironment.PRODUCTION) {
+if (config.app.env === EApplicationEnvironment.DEVELOPMENT) {
   logger.add(
     new winston.transports.Console({
       format: combine(
@@ -110,7 +110,7 @@ if (config.app.env === EApplicationEnvironment.PRODUCTION) {
 
 
 //  production → MongoDB logs
-if (config.app.env === EApplicationEnvironment.DEVELOPMENT) {
+if (config.app.env === EApplicationEnvironment.PRODUCTION) {
   logger.add(
     new winston.transports.MongoDB({
       level: "info",
