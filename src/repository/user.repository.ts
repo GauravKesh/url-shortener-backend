@@ -8,6 +8,16 @@ export const findUserById = async (id: number) => {
   return rows[0];
 };
 
+
+export const findUserByUserId = async (userId: string) => {
+  const { rows } = await pool.query(
+    "SELECT * FROM users WHERE user_id = $1 AND deleted_at IS NULL",
+    [userId]
+  );
+  return rows[0];
+};
+
+
 export const findUserByEmail = async (email: string) => {
   const { rows } = await pool.query(
     "SELECT * FROM users WHERE email = $1 AND deleted_at IS NULL",

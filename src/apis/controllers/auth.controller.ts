@@ -251,21 +251,38 @@ export default {
     next: NextFunction
   ) => {
     try {
-      const { token, newPassword, logoutOtherSessions } = req.body;
+      const {
+        token,
+        oldPassword,
+        newPassword,
+        logoutOtherSessions,
+        passwordChangeTokenMode,
+      } = req.body;
 
-      if (!token || !newPassword) {
+      if (!newPassword) {
         throw new AppError(ERRORS.BAD_REQUEST);
       }
-
-      await authService.confirmPasswordReset(
+      console.log({...req.body});
+      await authService.confirmPasswordReset({
         token,
+        userId:req.user?.userId,
+        oldPassword,
         newPassword,
-        !!logoutOtherSessions
-      );
+        logoutOtherSessions: !!logoutOtherSessions,
+        passwordChangeTokenMode: !!passwordChangeTokenMode,
+      });
 
-      return httpResponse(req, res, HTTP_STATUS.OK, MESSAGES.PASSWORD_RESET_SUCCESS);
+      return httpResponse(
+        req,
+        res,
+        HTTP_STATUS.OK,
+        passwordChangeTokenMode
+          ? MESSAGES.PASSWORD_RESET_SUCCESS
+          : MESSAGES.PASSWORD_RESET_SUCCESS
+      );
     } catch (err) {
       httpError(next, err, req);
     }
   },
+
 };

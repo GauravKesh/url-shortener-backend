@@ -102,6 +102,15 @@ export const MESSAGES = {
   SESSION_EXPIRED: "Session expired",
   TOKEN_REFRESHED: "Token refreshed successfully",
 
+  // Advanced Auth & Token Links
+  PASSWORD_TOKEN_EXPIRED: "The password reset link has expired",
+  PASSWORD_TOKEN_INVALID: "The password reset link is invalid or has already been used",
+  PASSWORD_TOKEN_GENERATED: "Password reset token generated.",
+  EMAIL_VERIFICATION_EXPIRED: "The email verification link has expired",
+  EMAIL_ALREADY_VERIFIED: "This email address is already verified",
+  ACCOUNT_LOCKED: "Account temporarily locked due to too many failed login attempts",
+
+
   // User
   USER_CREATED: "User created successfully",
   USER_UPDATED: "User updated successfully",
@@ -148,8 +157,8 @@ export const MESSAGES = {
   API_KEY_DELETED: "API key deleted successfully",
   API_KEY_REVOKED: "API key revoked successfully",
   API_KEY_ROTATED: "API key rotated successfully",
-  API_KEY_UPDATED:"API key updated successfully",
-  API_KEYS_FETCHED:"API key fetched successfully",
+  API_KEY_UPDATED: "API key updated successfully",
+  API_KEYS_FETCHED: "API key fetched successfully",
   API_KEY_INVALID: "Invalid API key",
 
 
@@ -166,4 +175,186 @@ export const MESSAGES = {
   CACHE_UNAVAILABLE: "Cache is unavailable",
   QUEUE_UNAVAILABLE: "Message queue is unavailable",
   EXTERNAL_SERVICE_UNAVAILABLE: "External service is unavailable",
+
+  // URL & Alias Specifics
+  ALIAS_ALREADY_TAKEN: "This custom alias is already in use",
+  ALIAS_RESERVED: "This alias is reserved and cannot be used",
+  INVALID_ALIAS_FORMAT: "Alias contains invalid characters or exceeds length limits",
+  DESTINATION_URL_INVALID: "The provided destination URL is malformed or invalid",
+  URL_PASSWORD_REQUIRED: "This short link is password-protected",
+  URL_PASSWORD_INVALID: "Incorrect password for this short link",
+  BULK_URL_CREATION_SUCCESS: "Bulk URLs processed successfully",
+  BULK_URL_CREATION_FAILED: "Failed to process bulk URL request",
+
+  // Custom Domains
+  DOMAIN_ADDED: "Custom domain added successfully",
+  DOMAIN_DELETED: "Custom domain removed successfully",
+  DOMAIN_VERIFIED: "Domain ownership verified successfully",
+  DOMAIN_VERIFICATION_FAILED: "Domain verification failed",
+  DOMAIN_DNS_NOT_CONFIGURED: "DNS records are not properly configured yet",
+  DOMAIN_ALREADY_EXISTS: "This domain is already registered by another account",
+  SSL_CERTIFICATE_ISSUED: "SSL certificate generated successfully",
+  SSL_CERTIFICATE_FAILED: "Failed to generate SSL certificate",
+
+  // Analytics
+  ANALYTICS_FETCHED: "Analytics data retrieved successfully",
+  CLICK_TRACKED: "Link click registered successfully",
+  EXPORT_STARTED: "Analytics export data is being generated",
+  EXPORT_READY: "Analytics report is ready for download",
+
+  // Link Safety & Security
+  URL_SPAM_FLAGGED: "This URL has been flagged as potential spam or phishing",
+  URL_MALICIOUS: "Destination URL contains known malware or security threats",
+  DOMAIN_BLACKLISTED: "The target domain is on our blacklist",
+  URL_UNDER_REVIEW: "This link is currently undergoing a safety review",
+
+  // Advanced Features
+  QR_CODE_GENERATED: "QR Code generated successfully",
+  META_TAGS_UPDATED: "Link social media preview tags updated successfully",
+
+  // Folders & Tags (Organization)
+  FOLDER_CREATED: "Folder created successfully",
+  FOLDER_UPDATED: "Folder renamed successfully",
+  FOLDER_DELETED: "Folder deleted successfully",
+  TAG_CREATED: "Tag created successfully",
+  TAG_ATTACHED: "Tag added to link successfully",
+  TAG_DETACHED: "Tag removed from link successfully",
+
+  // Roles & Permissions (RBAC)
+  INSUFFICIENT_PERMISSIONS: "You do not have permission to perform this action",
+  ROLE_UPDATED: "User role updated successfully",
+  CANNOT_REMOVE_OWNER: "Cannot remove the owner of the organization",
+  OWNERSHIP_TRANSFERRED: "Organization ownership transferred successfully",
+
+  // Advanced Link Routing (A/B Testing, Geo-targeting, Device-targeting)
+  ROUTING_RULES_UPDATED: "Link routing rules updated successfully",
+  FALLBACK_URL_REQUIRED: "A fallback URL is required for conditional routing",
+  DEEP_LINK_CONFIGURED: "Mobile deep link configurations saved",
+
+  // Media & File Uploads (For custom QR code logos or custom domain favicons)
+  FILE_UPLOADED: "File uploaded successfully",
+  FILE_SIZE_EXCEEDED: "Uploaded file exceeds the maximum allowed size",
+  INVALID_FILE_TYPE: "Invalid file format. Only images are allowed",
+  FILE_DELETED: "File removed successfully",
+
+  // Rate Limiting & Abuse Prevention (Granular)
+  IP_BANNED: "This IP address has been temporarily banned due to suspicious activity",
+  CAPTCHA_REQUIRED: "Please complete the CAPTCHA to continue",
+  CAPTCHA_FAILED: "CAPTCHA verification failed",
+  TOO_MANY_LOGIN_ATTEMPTS: "Too many login attempts. Try again later",
+
+  // Import / Export (Bulk operations)
+  IMPORT_STARTED: "Link import process has started in the background",
+  IMPORT_COMPLETED: "Links imported successfully",
+  IMPORT_FAILED: "Errors occurred during link import",
+  EXPORT_REQUESTED: "Export requested. You will receive an email when it is ready",
+
+  // --- Image & Media Uploads ---
+  IMAGE_UPLOAD_SUCCESS: "Image uploaded successfully",
+  IMAGE_UPLOAD_FAILED: "Failed to upload image",
+  IMAGE_TOO_LARGE: "Image file size exceeds the allowed limit (e.g., 5MB max)",
+  UNSUPPORTED_IMAGE_FORMAT: "Unsupported image format. Please use JPG, PNG, WebP, or SVG",
+  IMAGE_DELETED: "Image deleted successfully",
+  IMAGE_PROCESSING_FAILED: "Failed to process or compress the uploaded image",
+
+  // Specific Image Contexts
+  AVATAR_UPDATED: "Profile avatar updated successfully",
+  AVATAR_REMOVED: "Profile avatar removed",
+  OG_IMAGE_UPDATED: "Social preview (OpenGraph) image updated successfully",
+  OG_IMAGE_REMOVED: "Social preview image removed",
+  QR_LOGO_UPDATED: "QR code center logo uploaded successfully",
+  QR_LOGO_REMOVED: "QR code center logo removed",
+
+  // --- Advanced Analytics & Reporting ---
+  // General Stats
+  STATS_FETCHED: "Statistics retrieved successfully",
+  ANALYTICS_NO_DATA: "No analytics data available for the selected date range",
+  INVALID_DATE_RANGE: "The provided date range is invalid",
+
+  // Granular Metrics
+  GEO_STATS_FETCHED: "Geographic analytics (countries/cities) retrieved successfully",
+  DEVICE_STATS_FETCHED: "Device analytics (OS/browser/device type) retrieved successfully",
+  REFERRER_STATS_FETCHED: "Referrer analytics (social media/websites) retrieved successfully",
+  TIME_SERIES_FETCHED: "Time-series click data retrieved successfully",
+
+  // Reports & Exports
+  REPORT_GENERATION_STARTED: "Report generation started. This may take a few moments",
+  REPORT_READY_FOR_DOWNLOAD: "Your analytics report is ready for download",
+  REPORT_FAILED: "Failed to generate the analytics report",
+  UNSUPPORTED_EXPORT_FORMAT: "Unsupported export format. Please request CSV or PDF",
+
+  // --- Link QR Code Customization ---
+  QR_DESIGN_SAVED: "QR code design preferences saved successfully",
+  QR_TEMPLATE_CREATED: "QR code template created successfully",
+  QR_TEMPLATE_DELETED: "QR code template deleted",
+
+  // --- Agent Lifecycle & State ---
+  AGENT_INITIALIZED: "AI Agent initialized successfully",
+  AGENT_PAUSED: "Agent execution paused waiting for user input",
+  AGENT_RESUMED: "Agent execution resumed",
+  AGENT_TERMINATED: "Agent execution terminated",
+  AGENT_ESCALATED: "Agent escalated task to human operator",
+  MAX_STEPS_REACHED: "Agent execution stopped: Maximum reasoning steps reached",
+  CONTEXT_WINDOW_EXCEEDED: "Input and history exceed the model's maximum context window",
+  STATE_PERSISTENCE_FAILED: "Failed to save the agent's current state",
+
+  // --- Tool & Function Calling ---
+  TOOL_CALL_INITIATED: "Agent initiated a tool call",
+  TOOL_EXECUTION_SUCCESS: "Tool executed successfully",
+  TOOL_EXECUTION_FAILED: "Tool execution failed",
+  TOOL_NOT_FOUND: "Agent attempted to call a tool that does not exist",
+  TOOL_UNAUTHORIZED: "Agent is not authorized to use this tool",
+  INVALID_TOOL_ARGUMENTS: "Agent provided invalid arguments for the tool schema",
+  TOOL_TIMEOUT: "Tool execution timed out",
+
+  // --- Human-in-the-Loop (HITL) & Approvals ---
+  TOOL_APPROVAL_REQUIRED: "Tool execution requires human approval",
+  TOOL_APPROVAL_GRANTED: "Tool execution approved by user",
+  TOOL_APPROVAL_DENIED: "Tool execution denied by user",
+  ACTION_NEEDS_CLARIFICATION: "Agent requires clarification to proceed",
+
+  // --- Memory & Context Management (Short & Long-term) ---
+  MEMORY_STORED: "Context successfully saved to agent memory",
+  MEMORY_RETRIEVED: "Relevant memories retrieved successfully",
+  MEMORY_PRUNED: "Old context pruned to fit memory constraints",
+  VECTOR_DB_UNAVAILABLE: "Vector database connection failed",
+  EMBEDDING_FAILED: "Failed to generate text embeddings for memory storage",
+  KNOWLEDGE_BASE_SYNCED: "Knowledge base synchronized successfully",
+
+  // --- Orchestration & Reasoning Loop ---
+  PLANNING_STARTED: "Agent is generating an execution plan",
+  PLAN_UPDATED: "Execution plan adapted based on new observations",
+  SUBTASK_COMPLETED: "Agent completed a sub-task",
+  REASONING_ERROR: "Agent encountered a logic error during reasoning",
+  INVALID_JSON_RESPONSE: "Model returned malformed JSON that could not be parsed",
+  RATE_LIMIT_LLM: "LLM Provider rate limit exceeded. Retrying...",
+  PROVIDER_ERROR: "Upstream LLM provider encountered an error",
+
+  // --- Guardrails, Security & Anti-Abuse ---
+  GUARDRAIL_TRIGGERED: "Agent output blocked by safety guardrails",
+  PROMPT_INJECTION_DETECTED: "Potential prompt injection or jailbreak detected",
+  PII_REDACTED: "Sensitive Personally Identifiable Information (PII) redacted",
+  CONFUSED_DEPUTY_PREVENTED: "Blocked unauthorized cross-tenant data access attempt",
+  CONTENT_MODERATION_FLAGGED: "Input flagged by content moderation policies",
+
+  // --- Workspaces & Sandboxes (e.g., Code Interpreters) ---
+  WORKSPACE_PROVISIONED: "Isolated execution workspace created",
+  WORKSPACE_DESTROYED: "Execution workspace cleaned up",
+  SANDBOX_TIMEOUT: "Code execution exceeded allowed time limits",
+  SANDBOX_CRASHED: "Isolated code execution environment crashed",
+  FILE_GENERATED: "Agent generated a file successfully",
+  UNAUTHORIZED_FILE_ACCESS: "Agent attempted to access restricted file paths",
+
+  // Token Lifecycle & Validation
+  TOKEN_VERIFIED: "Token verified successfully",
+  TOKEN_EXPIRED: "This token has expired. Please request a new one",
+  TOKEN_INVALID: "This token is invalid or malformed",
+  TOKEN_ALREADY_USED: "This token has already been used",
+  TOKEN_MISSING: "No token provided in the request",
+
+  // Secure Auth Responses (Anti-Enumeration)
+  PASSWORD_RESET_REQUESTED: "If an account with that email exists, a password reset link has been sent.",
+  FORGOT_USERNAME_REQUESTED: "If that email is registered, we have sent your username to it.",
+  VERIFICATION_RESENT: "If your account requires verification, a new link has been sent.",
+
 };

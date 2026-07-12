@@ -9,9 +9,12 @@ AuthRouter.post("/login", authController.login);
 AuthRouter.post("/request-password-reset", authController.requestPasswordReset);
 AuthRouter.post("/reset-password", authController.resetPassword);
 
+
 AuthRouter.post("/logout", authController.logout);
 AuthRouter.post("/refresh", authController.refresh);
+
 AuthRouter.use(authenticate)
 AuthRouter.get("/me", authController.me);
+AuthRouter.post("/signed/reset-password", authController.resetPassword);
 
 export default AuthRouter;

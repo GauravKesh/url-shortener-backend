@@ -18,9 +18,9 @@ import { AppError } from "../../utils/AppError.ts";
 
 
 // Helper to get the correct organization integer ID for the current user
-const getOrgIdForUser = async (userId: number | undefined) => {
+const getOrgIdForUser = async (userId: number | undefined | string) => {
     if (!userId) throw new AppError(ERRORS.FORBIDDEN);
-    const org = await findOrgByUser(userId);
+    const org = await findOrgByUser(userId as number);
     if (!org) throw new AppError(ERRORS.FORBIDDEN, "Organization not found");
     return org.id; // Return the database integer ID
 };
