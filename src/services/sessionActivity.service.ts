@@ -23,7 +23,6 @@ export const getUserLoginActivity = async (userId: number, opts: ActivityOptions
     const now = new Date();
     let status: LoginActivityItem["status"] = "success";
 
-    // --- NEW: Accurately map status for the frontend ---
     if (expiresAt && expiresAt <= now) {
       status = "expired";
     } else if (!r.is_active) {

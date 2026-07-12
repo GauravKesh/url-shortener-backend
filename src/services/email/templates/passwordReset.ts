@@ -1,7 +1,9 @@
 import config from "../../../config/config.ts";
 import type { EmailTemplateData } from "./index.ts";
 
-const passwordReset = (variables: Record<string, string> = {}): EmailTemplateData => {
+const passwordReset = (
+  variables: Record<string, string> = {},
+): EmailTemplateData => {
   const appName = variables.appName || config.app.name;
   return {
     subject: "Password reset request",
