@@ -90,10 +90,94 @@ export const ERRORS = {
         code: "AUTH_010",
         message: "Email not verified",
         status: 403,
-    },SESSION_LIMIT_REACHED: {
+    }, SESSION_LIMIT_REACHED: {
         code: "AUTH_011",
         message: "Maximum session limit reached",
         status: 401,
+    },
+
+
+    // --- NEW: Password & Security ---
+    INVALID_RESET_TOKEN: {
+        code: "SEC_001",
+        message: "Invalid password reset token",
+        status: 400, // 400 is better than 401 here since it's an invalid input, not an active session auth failure
+    },
+    EXPIRED_RESET_TOKEN: {
+        code: "SEC_002",
+        message: "Password reset token has expired",
+        status: 400,
+    },
+    PASSWORD_SAME_AS_OLD: {
+        code: "SEC_003",
+        message: "New password cannot be the same as the current password",
+        status: 400,
+    },
+    WEAK_PASSWORD: {
+        code: "SEC_004",
+        message: "Password does not meet complexity requirements",
+        status: 400,
+    },
+    PASSWORD_EXPIRED: {
+        code: "SEC_005",
+        message: "Your password has expired and must be updated",
+        status: 403,
+    },
+
+    // --- NEW: Expanded Auth & Session ---
+    REAUTHENTICATION_REQUIRED: {
+        code: "AUTH_012",
+        message: "Please re-authenticate to perform this sensitive action",
+        status: 403, // User is logged in (not 401), but needs fresh auth for this specific endpoint (e.g., changing billing info)
+    },
+    INVALID_CSRF_TOKEN: {
+        code: "AUTH_013",
+        message: "Invalid or missing CSRF token",
+        status: 403,
+    },
+    UNRECOGNIZED_DEVICE: {
+        code: "AUTH_014",
+        message: "Unrecognized device. Please verify your identity.",
+        status: 403,
+    },
+    IP_RESTRICTED: {
+        code: "AUTH_015",
+        message: "Access denied from this IP address",
+        status: 403,
+    },
+    SSO_REQUIRED: {
+        code: "AUTH_016",
+        message: "Please log in using your organization's Single Sign-On (SSO)",
+        status: 403,
+    },
+
+    // --- NEW: Granular Permissions ---
+    INSUFFICIENT_PERMISSIONS: {
+        code: "PERM_403",
+        message: "You do not have the required permissions to perform this action",
+        status: 403,
+    },
+    ROLE_RESTRICTED: {
+        code: "PERM_403_ROLE",
+        message: "Your current role does not allow this action",
+        status: 403,
+    },
+
+    // --- NEW: Expanded User States ---
+    EMAIL_ALREADY_VERIFIED: {
+        code: "USER_400_VERIFIED",
+        message: "This email address is already verified",
+        status: 400,
+    },
+    ACCOUNT_PENDING_APPROVAL: {
+        code: "USER_403_PENDING",
+        message: "Your account is currently pending administrator approval",
+        status: 403,
+    },
+    ACCOUNT_DELETED: {
+        code: "USER_410_DELETED",
+        message: "This account has been permanently deleted",
+        status: 410, // 410 Gone is perfect for deleted resources
     },
 
     // User
@@ -193,7 +277,7 @@ export const ERRORS = {
         message: "API key revoked",
         status: 401,
     },
-     API_KEY_LIMIT_REACHED: {
+    API_KEY_LIMIT_REACHED: {
         code: "API_403",
         message: "API key Limit exceeded",
         status: 401,

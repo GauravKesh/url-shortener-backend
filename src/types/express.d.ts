@@ -17,7 +17,7 @@ export interface ApiKeyData {
 }
 
 export interface AuthUser {
-  userId?: number;
+  userId?: string | number | any;
   organizationId?: number;
   tenantId?: number;
   role?: Role;
@@ -29,8 +29,8 @@ declare module "express-serve-static-core" {
     requestId?: string;
     user?: AuthUser;
     apiKey?: ApiKeyData;
-    clientIp?:string;
+    clientIp?: string;
   }
 }
 
-export {};
+export { };

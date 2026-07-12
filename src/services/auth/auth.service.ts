@@ -3,7 +3,7 @@ import { signAccessToken, signRefreshToken } from "../../utils/jwt.ts";
 import jwt from "jsonwebtoken";
 
 import { AppError } from "../../utils/AppError.ts";
-import { ERRORS } from "../../constants/index.ts";
+import { ERRORS, MESSAGES } from "../../constants/index.ts";
 import redisClient from "../../config/cache/redis.ts";
 
 import {
@@ -16,7 +16,7 @@ import {
   findOrgByUser
 } from "../../repository/organization.repository.ts";
 import * as sessionService from "../session.service.ts";
-import * as passwordResetService from "../passwordReset.service.ts";
+import * as passwordResetService from "./passwordReset.service.ts";
 
 import config from "../../config/config.ts";
 import { createSubscription } from "../../repository/subscription.repository.ts";
@@ -189,14 +189,14 @@ export const login = async ({
   // }
 
   if (sessions.length >= maxSessions) {
-  logger.warn("Login blocked: Maximum active sessions reached", {
-    userId: user.id,
-    activeSessions: sessions.length,
-    maxSessions,
-  });
+    logger.warn("Login blocked: Maximum active sessions reached", {
+      userId: user.id,
+      activeSessions: sessions.length,
+      maxSessions,
+    });
 
-  throw new AppError(ERRORS.SESSION_LIMIT_REACHED);
-}
+    throw new AppError(ERRORS.SESSION_LIMIT_REACHED);
+  }
   const payload = {
     userId: user.id,
     organizationId: organization?.id,
@@ -322,7 +322,7 @@ export const refresh = async (token: string, ip?: string) => {
 
     await redisClient.setEx(`session:hash:${newTokenHash}`, CACHE_TTL_SESSION, JSON.stringify(newSession));
 
-    logger.info("Token refreshed successfully", { userId: decoded.userId });
+    logger.info(MESSAGES.TOKEN_REFRESHED, { userId: decoded.userId });
 
     return {
       accessToken: newAccessToken,
@@ -339,16 +339,29 @@ export const requestPasswordReset = async (email: string) => {
   return passwordResetService.requestPasswordReset(email);
 };
 
-export const confirmPasswordReset = async (
-  token: string,
-  newPassword: string,
-  logoutOtherSessions = false
-) => {
-  return passwordResetService.confirmPasswordReset(
+export const confirmPasswordReset = async ({
+  token,
+  userId,
+  oldPassword,
+  newPassword,
+  logoutOtherSessions = false,
+  passwordChangeTokenMode = false,
+}: {
+  token?: string;
+  userId?: string;
+  oldPassword?: string;
+  newPassword: string;
+  logoutOtherSessions?: boolean;
+  passwordChangeTokenMode?: boolean;
+}) => {
+  return passwordResetService.confirmPasswordReset({
     token,
+    userId,
+    oldPassword,
     newPassword,
-    logoutOtherSessions
-  );
+    logoutOtherSessions,
+    passwordChangeTokenMode,
+  });
 };
 
 // LOGOUT
